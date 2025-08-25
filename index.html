@@ -6,6 +6,28 @@
   <title>Matthew Iglody'sRetro Portfolio</title>
   <link rel="icon" href="./pics/icons/winlogo.png" type="image/png" />
   <link rel="stylesheet" href="./style.css">
+  <style>
+    /* Create a main desktop area to logically separate icons from the window canvas */
+    #main-desktop {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      /* Adjust height to leave space for the taskbar (assuming 40px height) */
+      height: calc(100vh - 40px);
+      display: flex;
+    }
+    /* Define the area for the desktop icons on the left */
+    #desktop-container {
+      flex-basis: 120px; /* Fixed width for the icon column */
+      flex-shrink: 0;
+    }
+    /* Define the area where windows can appear */
+    #window-area {
+      flex-grow: 1;
+      position: relative; /* This is key: it becomes the new positioning parent for all windows */
+    }
+  </style>
 </head>
 <body>
   <div id="loading-screen">
@@ -15,35 +37,43 @@
     </div>
   </div>
 
-  <div id="desktop-container" class="hidden">
-    <div class="desktop-icon" data-window-id="aboutWindow">
-      <img src="./pics/icons/systhdd.png" /><br />
-      About Me
+  <div id="main-desktop">
+    <div id="desktop-container" class="hidden">
+      <div class="desktop-icon" data-window-id="aboutWindow">
+        <img src="./pics/icons/systhdd.png" /><br />
+        About Me
+      </div>
+      <div class="desktop-icon" data-window-id="projectsWindow">
+        <img src="./pics/icons/fileexplore.png" /><br />
+        My Projects
+      </div>
+      <div class="desktop-icon" data-window-id="contactWindow">
+        <img src="./pics/icons/contact.png" /><br />
+        Contact
+      </div>
+      <div class="desktop-icon" data-window-id="mediaPlayer">
+        <img src="./pics/icons/wmp.png" /><br />
+        Media Player
+      </div>
+      <div class="desktop-icon" data-window-id="imageViewerWindow">
+        <img src="./pics/icons/photos.png" /><br />
+        My Photos
+      </div>
+      <div class="desktop-icon" data-window-id="notepadWindow">
+        <img src="./pics/icons/textedit.png" /><br />
+        Notepad
+      </div>
     </div>
-    <div class="desktop-icon" data-window-id="projectsWindow">
-      <img src="./pics/icons/fileexplore.png" /><br />
-      My Projects
-    </div>
-    <div class="desktop-icon" data-window-id="contactWindow">
-      <img src="./pics/icons/contact.png" /><br />
-      Contact
-    </div>
-    <div class="desktop-icon" data-window-id="mediaPlayer">
-      <img src="./pics/icons/wmp.png" /><br />
-      Media Player
-    </div>
-    <div class="desktop-icon" data-window-id="imageViewerWindow">
-      <img src="./pics/icons/photos.png" /><br />
-      My Photos
-    </div>
-    <div class="desktop-icon" data-window-id="notepadWindow">
-      <img src="./pics/icons/textedit.png" /><br />
-      Notepad
-    </div>
-  </div>
 
-  <!-- Portfolio Windows -->
-  <div class="window" id="projectsWindow">
+    <div id="window-area">
+      <!-- 
+        All windows are now inside this container. 
+        Their absolute positioning will be relative to this container, 
+        preventing them from overlapping the desktop icons on the left.
+      -->
+
+      <!-- Portfolio Windows -->
+      <div class="window" id="projectsWindow">
     <div class="title-bar">
       <span>My Projects</span>
       <div>
@@ -194,9 +224,8 @@
     </div>
     <div class="resize-handle"></div>
   </div>
-
-
-
+    </div>
+  </div>
   <div id="taskbar" class="hidden">
     <div id="start">
       <img src="./pics/icons/winlogo.png" alt="Start" />
