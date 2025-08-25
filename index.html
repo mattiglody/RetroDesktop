@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Matthew Iglody'sRetro Portfolio</title>
+  <link rel="icon" href="pics/icons/winlogo.png" type="image/png" />
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="loading-screen">
+    <img src="pics/icons/winlogo.png" alt="Windows 98 Logo" class="loading-logo" />
+    <div class="loading-bar-container">
+      <div class="loading-bar"></div>
+    </div>
+  </div>
+
+  <div id="desktop-container" class="hidden">
+    <div class="desktop-icon" data-window-id="aboutWindow">
+      <img src="pics/icons/systhdd.png" /><br />
+      About Me
+    </div>
+    <div class="desktop-icon" data-window-id="projectsWindow">
+      <img src="pics/icons/fileexplore.png" /><br />
+      My Projects
+    </div>
+    <div class="desktop-icon" data-window-id="contactWindow">
+      <img src="pics/icons/contact.png" /><br />
+      Contact
+    </div>
+    <div class="desktop-icon" data-window-id="mediaPlayer">
+      <img src="pics/icons/wmp.png" /><br />
+      Media Player
+    </div>
+    <div class="desktop-icon" data-window-id="imageViewerWindow">
+      <img src="pics/icons/photos.png" /><br />
+      My Photos
+    </div>
+    <div class="desktop-icon" data-window-id="notepadWindow">
+      <img src="pics/icons/textedit.png" /><br />
+      Notepad
+    </div>
+  </div>
+
+  <!-- Portfolio Windows -->
+  <div class="window" id="projectsWindow" style="top: 150px; left: 150px;">
+    <div class="title-bar">
+      <span>My Projects</span>
+      <div>
+        <button class="win-btn minimize-btn" title="Minimize">_</button>
+        <button class="win-btn maximize-btn" title="Maximize"></button>
+        <button class="win-btn close-btn" title="Close">X</button>
+      </div>
+    </div>
+    <div class="content">
+      <p>Here are some of my projects:</p>
+      <ul>
+        <li><a href="https://fastmri.med.nyu.edu/" target="_blank" rel="noopener noreferrer">NYU fastMRI Project</a></li>
+        <li><a href="https://radiologyresidentcorelectures.com/" target="_blank" rel="noopener noreferrer">AUR Radiology Resident First Year Lectures</a></li>
+        <li>Project 3: Description...</li>
+        <li>Project 4: Description...</li>
+        <li><a href="https://sensoryspeaking.org/" target="_blank" rel="noopener noreferrer">Sensory Speaking Website</a> | July 2025</li>
+      </ul>
+    </div>
+    <div class="resize-handle"></div>
+  </div>
+  <div class="window" id="aboutWindow" style="top: 200px; left: 200px;">
+    <div class="title-bar">
+      <span>About Me</span>
+      <div>
+        <button class="win-btn minimize-btn" title="Minimize">_</button>
+        <button class="win-btn maximize-btn" title="Maximize"></button>
+        <button class="win-btn close-btn" title="Close">X</button>
+      </div>
+    </div>
+    <div class="content">
+      <p>This is where I'll write a bit about myself, my skills, and my experience.</p>
+    </div>
+    <div class="resize-handle"></div>
+  </div>
+
+  <!-- Media Player Window -->
+  <div class="window" id="mediaPlayer" style="top: 100px; left: 100px; width: 450px; height: 350px;">
+    <div class="title-bar">
+      <span>Media Player</span>
+      <div>
+        <button class="win-btn minimize-btn" title="Minimize">_</button>
+        <button class="win-btn maximize-btn" title="Maximize"></button>
+        <button class="win-btn close-btn" title="Close">X</button>
+      </div>
+    </div>
+    <div class="content" id="mediaPlayerContent">
+      <div class="visualizer-container">
+        <canvas id="visualizer"></canvas>
+        <div id="nowPlaying"></div>
+      </div>
+      <div class="media-footer">
+        <div class="media-progress">
+          <input type="range" id="seekBar" value="0" min="0" max="100" step="1" disabled />
+        </div>
+        <div class="media-controls">
+          <div class="playback-buttons">
+            <button id="prevBtn" class="disabled">⏮</button>
+            <button id="playBtn" class="disabled">▶</button>
+            <button id="pauseBtn" class="disabled">⏸</button>
+            <button id="stopBtn" class="disabled">⏹</button>
+            <button id="nextBtn" class="disabled">⏭</button>
+          </div>
+          <div class="file-and-volume">
+            <input type="file" id="audioFile" accept="audio/*" style="display:none;" />
+            <select id="playlistDropdown" class="win-button"></select>
+            <label for="audioFile" class="win-button">Open...</label>
+            <input type="range" id="volumeControl" min="0" max="1" step="0.01" value="1" disabled />
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="resize-handle"></div>
+  </div>
+
+  <div class="window" id="contactWindow" style="top: 250px; left: 250px;">
+    <div class="title-bar">
+      <span>Contact</span>
+      <div>
+        <button class="win-btn minimize-btn" title="Minimize">_</button>
+        <button class="win-btn maximize-btn" title="Maximize"></button>
+        <button class="win-btn close-btn" title="Close">X</button>
+      </div>
+    </div>
+    <div class="content">
+      <p>You can reach me here:</p>
+      <ul>
+        <li>Email: <a href="mailto:mattiglody@gmail.com">mattiglody@gmail.com</a></li>
+        <li>LinkedIn: <a href="https://www.linkedin.com/in/matthew-iglody/" target="_blank" rel="noopener noreferrer">https://www.linkedin.com/in/matthew-iglody/</a></li>
+        <li>GitHub: <a href="https://github.com/mattiglody" target="_blank" rel="noopener noreferrer">https://github.com/mattiglody</a></li>
+        <li>Resume: <a href="docs/Matthew_E_Iglody_2025.pdf" target="_blank" rel="noopener noreferrer">View PDF</a></li>
+      </ul>
+    </div>
+    <div class="resize-handle"></div>
+  </div>
+
+  <!-- Image Viewer Window -->
+  <div class="window" id="imageViewerWindow" style="top: 50px; left: 50px; width: 600px; height: 450px;">
+    <div class="title-bar">
+      <span>Image Viewer</span>
+      <div>
+        <button class="win-btn minimize-btn" title="Minimize">_</button>
+        <button class="win-btn maximize-btn" title="Maximize"></button>
+        <button class="win-btn close-btn" title="Close">X</button>
+      </div>
+    </div>
+    <div class="content" id="imageViewerContent">
+      <div class="image-display-area">
+        <img id="mainImage" src="" alt="Main view" />
+      </div>
+      <div class="image-controls">
+        <button id="prevImageBtn" class="win-button">&lt; Prev</button>
+        <span id="imageCaption"></span>
+        <button id="nextImageBtn" class="win-button">Next &gt;</button>
+      </div>
+      <div class="thumbnail-bar"></div>
+    </div>
+    <div class="resize-handle"></div>
+  </div>
+
+  <!-- Display Properties Window (for context menu) -->
+  <div class="window" id="displayPropertiesWindow" style="top: 220px; left: 280px;">
+    <div class="title-bar">
+      <span>Display Properties</span>
+      <div>
+        <button class="win-btn minimize-btn" title="Minimize">_</button>
+        <button class="win-btn maximize-btn" title="Maximize"></button>
+        <button class="win-btn close-btn" title="Close">X</button>
+      </div>
+    </div>
+    <div class="content">
+      <p>Background: Teal</p>
+    </div>
+    <div class="resize-handle"></div>
+  </div>
+
+  <!-- Notepad Window -->
+  <div class="window" id="notepadWindow" style="top: 180px; left: 300px; width: 400px; height: 300px;">
+    <div class="title-bar">
+      <span>Untitled - Notepad</span>
+      <div>
+        <button class="win-btn minimize-btn" title="Minimize">_</button>
+        <button class="win-btn maximize-btn" title="Maximize"></button>
+        <button class="win-btn close-btn" title="Close">X</button>
+      </div>
+    </div>
+    <div class="content">
+      <textarea id="notepadTextarea" placeholder="Type your notes here..."></textarea>
+    </div>
+    <div class="resize-handle"></div>
+  </div>
+
+
+
+  <div id="taskbar" class="hidden">
+    <div id="start">
+      <img src="pics/icons/winlogo.png" alt="Start" />
+      Start
+    </div>
+    <div id="taskbar-tabs"></div>
+    <div id="clock"></div>
+  </div>
+
+  <div id="startMenu">
+    <div class="start-menu-sidebar">
+      <b>Windows</b><span>98</span>
+    </div>
+    <ul class="start-menu-items">
+      <li data-window-id="aboutWindow">
+        <img src="pics/icons/systhdd.png" />
+        <span><b>A</b>bout Me</span>
+      </li>
+      <li data-window-id="projectsWindow">
+        <img src="pics/icons/fileexplore.png" />
+        <span>My <b>P</b>rojects</span>
+      </li>
+      <li data-window-id="contactWindow">
+        <img src="pics/icons/contact.png" />
+        <span><b>C</b>ontact</span>
+      </li>
+      <li class="separator"></li>
+      <li data-window-id="imageViewerWindow">
+        <img src="pics/icons/photos.png" />
+        <span>My <b>P</b>hotos</span>
+      </li>
+      <li class="separator"></li>
+      <li data-window-id="mediaPlayer">
+        <img src="pics/icons/wmp.png" />
+        <span>Media <b>P</b>layer</span>
+      </li>
+      <li data-window-id="notepadWindow">
+        <img src="pics/icons/textedit.png" />
+        <span><b>N</b>otepad</span>
+      </li>
+      <li class="separator"></li>
+      <li id="shutdownBtn">
+        <img src="pics/icons/shutdown.png" />
+        <span>Sh<b>u</b>t Down...</span>
+      </li>
+    </ul>
+  </div>
+
+  <!-- Desktop Context Menu -->
+  <div id="contextMenu">
+    <ul>
+      <li data-action="refresh">Refresh</li>
+      <li class="separator"></li>
+      <li data-action="properties">Properties</li>
+    </ul>
+  </div>
+
+  <!-- Sound Effects -->
+  <audio id="sound-startup" src="sounds/startup.mp3" preload="auto"></audio>
+  <audio id="sound-click" src="sounds/click.mp3" preload="auto"></audio>
+  <audio id="sound-open" src="sounds/open.mp3" preload="auto"></audio>
+  <audio id="sound-error" src="sounds/error.mp3" preload="auto"></audio>
+
+  <script src="script.js" defer></script>
+</body>
+</html>
