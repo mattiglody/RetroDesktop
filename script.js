@@ -474,12 +474,12 @@ volumeControl.oninput = () => {
 
 // --- Image Viewer Logic ---
 const photoAlbum = [
-  { src: 'https://mattiglody.github.io/RetroDesktop/pics/photography/delgap.jpg', caption: 'South West NJ Coast, Del Water Gap' },
-  { src: 'https://mattiglody.github.io/RetroDesktop/pics/photography/morntide.jpg', caption: 'Newport Jersey City Walkway' },
-  { src: 'https://mattiglody.github.io/RetroDesktop/pics/photography/moonset.jpg', caption: 'Hoboken Fire Escape' },
-  { src: 'https://mattiglody.github.io/RetroDesktop/pics/photography/nycsuns.jpg', caption: 'Midtown Sunset' },
-  { src: 'https://mattiglody.github.io/RetroDesktop/pics/photography/sherbsky.jpg', caption: 'Hoboken Fire Escape' },
-  { src: 'https://mattiglody.github.io/RetroDesktop/pics/photography/wintrrd.jpg', caption: 'Adirondack Northway in Winter' }
+  { src: 'pics/photography/delgap.jpg', caption: 'South West NJ Coast, Del Water Gap' },
+  { src: 'pics/photography/morntide.jpg', caption: 'Newport Jersey City Walkway' },
+  { src: 'pics/photography/moonset.jpg', caption: 'Hoboken Fire Escape' },
+  { src: 'pics/photography/nycsuns.jpg', caption: 'Midtown Sunset' },
+  { src: 'pics/photography/sherbsky.jpg', caption: 'Hoboken Fire Escape' },
+  { src: 'pics/photography/wintrrd.jpg', caption: 'Adirondack Northway in Winter' }
 ];
 let currentPhotoIndex = 0;
 
