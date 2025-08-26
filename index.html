@@ -6,28 +6,6 @@
   <title>Matthew Iglody'sRetro Portfolio</title>
   <link rel="icon" href="./pics/icons/winlogo.png" type="image/png" />
   <link rel="stylesheet" href="./style.css">
-  <style>
-    /* Create a main desktop area to logically separate icons from the window canvas */
-    #main-desktop {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      /* Adjust height to leave space for the taskbar (assuming 40px height) */
-      height: calc(100vh - 40px);
-      display: flex;
-    }
-    /* Define the area for the desktop icons on the left */
-    #desktop-container {
-      flex-basis: 120px; /* Fixed width for the icon column */
-      flex-shrink: 0;
-    }
-    /* Define the area where windows can appear */
-    #window-area {
-      flex-grow: 1;
-      position: relative; /* This is key: it becomes the new positioning parent for all windows */
-    }
-  </style>
 </head>
 <body>
   <div id="loading-screen">
@@ -37,8 +15,8 @@
     </div>
   </div>
 
-  <div id="main-desktop">
-    <div id="desktop-container" class="hidden">
+  <!-- The main desktop area now holds both icons and windows in the same space -->
+  <div id="main-desktop" class="hidden">
       <div class="desktop-icon" data-window-id="aboutWindow">
         <img src="./pics/icons/systhdd.png" /><br />
         About Me
@@ -63,15 +41,7 @@
         <img src="./pics/icons/textedit.png" /><br />
         Notepad
       </div>
-    </div>
-
-    <div id="window-area">
-      <!-- 
-        All windows are now inside this container. 
-        Their absolute positioning will be relative to this container, 
-        preventing them from overlapping the desktop icons on the left.
-      -->
-
+      
       <!-- Portfolio Windows -->
       <div class="window" id="projectsWindow">
     <div class="title-bar">
@@ -233,8 +203,7 @@ I was there for another two years</p>
       <textarea id="notepadTextarea" placeholder="Type your notes here..."></textarea>
     </div>
     <div class="resize-handle"></div>
-  </div>
-    </div>
+  </div>    
   </div>
   <div id="taskbar" class="hidden">
     <div id="start">
@@ -287,7 +256,11 @@ I was there for another two years</p>
   <!-- Desktop Context Menu -->
   <div id="contextMenu">
     <ul>
+      <li data-action="arrangeIcons"><u>A</u>rrange Icons</li>
+      <li data-action="lineUpIcons">Line <u>U</u>p Icons</li>
       <li data-action="refresh">Refresh</li>
+      <li class="separator"></li>
+      <li data-action="new"><u>N</u>ew</li>
       <li class="separator"></li>
       <li data-action="properties">Properties</li>
     </ul>

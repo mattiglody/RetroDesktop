@@ -1,7 +1,10 @@
-// --- Dragging Logic (for Windows and Icons) ---
+// --- Drag and Drop State & Logic ---
 let dragItem = null;
-let isDragging = false; // To distinguish click from drag
-let dragOffsetX, dragOffsetY;
+let isDragging = false;
+let dragStartPos = { x: 0, y: 0 }; // Store initial pointer position
+let offsetX = 0;
+let offsetY = 0;
+const DRAG_THRESHOLD = 5; // Pixels to move before a drag starts
 let zIndexCounter = 10;
 // --- Resizing Logic ---
 let resizeItem = null;
@@ -9,12 +12,165 @@ let initialWidth, initialHeight;
 let initialMouseX, initialMouseY;
 let minWidth, minHeight;
 const taskbarTabsContainer = document.getElementById('taskbar-tabs');
-const desktopContainer = document.getElementById('desktop-container');
+const desktopContainer = document.getElementById('main-desktop');
 let activeWindowId = null;
 
 // --- Path Configuration ---
 const isGithubPages = window.location.hostname.includes('github.io');
 const basePath = isGithubPages ? 'RetroDesktop/' : '';
+
+/**
+ * Starts the drag operation for a desktop icon.
+ */
+function onIconDragStart(e, item) {
+  // Prevent default browser actions like text selection
+  e.preventDefault();
+
+  dragItem = item;
+  isDragging = false; // Reset dragging state
+
+  const pointer = getPointerCoords(e);
+
+  // Store initial pointer position to calculate drag threshold
+  dragStartPos.x = pointer.x;
+  dragStartPos.y = pointer.y;
+
+  const rect = dragItem.getBoundingClientRect();
+  // Calculate where the click happened inside the icon
+  offsetX = pointer.x - rect.left;
+  offsetY = pointer.y - rect.top;
+
+  // Add listeners to the document to track movement anywhere on the page
+  document.addEventListener('mousemove', onIconDragMove);
+  document.addEventListener('mouseup', onIconDragEnd);
+  document.addEventListener('touchmove', onIconDragMove, { passive: false });
+  document.addEventListener('touchend', onIconDragEnd);
+}
+
+/**
+ * Handles the movement of a dragged icon.
+ */
+function onIconDragMove(e) {
+  if (dragItem === null) return;
+  e.preventDefault(); // Important for touch devices
+
+  const pointer = getPointerCoords(e);
+
+  if (!isDragging) {
+    const dx = pointer.x - dragStartPos.x;
+    const dy = pointer.y - dragStartPos.y;
+    if (Math.sqrt(dx * dx + dy * dy) >= DRAG_THRESHOLD) {
+      isDragging = true;
+      // Add a class to indicate dragging, useful for styling
+      dragItem.classList.add('dragging');
+    }
+  }
+
+  if (isDragging) {
+    const parentContainer = dragItem.parentElement;
+    const parentRect = parentContainer.getBoundingClientRect();
+
+    let newLeft = pointer.x - parentRect.left - offsetX;
+    let newTop = pointer.y - parentRect.top - offsetY;
+
+    // Constrain icon dragging within the desktop container
+    const maxLeft = parentRect.width - dragItem.offsetWidth;
+    const maxTop = parentRect.height - dragItem.offsetHeight;
+    newLeft = Math.max(0, Math.min(newLeft, maxLeft));
+    newTop = Math.max(0, Math.min(newTop, maxTop));
+
+    dragItem.style.left = `${newLeft}px`;
+    dragItem.style.top = `${newTop}px`;
+  }
+}
+
+/**
+ * Ends the icon drag operation.
+ * If it was a drag, it snaps the icon to the grid.
+ * If it was a click, it calls the icon click handler.
+ */
+function onIconDragEnd() {
+  if (dragItem) dragItem.classList.remove('dragging');
+
+  // If a drag occurred, snap the icon to the grid
+  if (isDragging && dragItem && dragItem.classList.contains('desktop-icon')) {
+    const iconToSnap = dragItem;
+    const container = document.getElementById('main-desktop');
+    const currentLeft = iconToSnap.offsetLeft;
+    const currentTop = iconToSnap.offsetTop;
+
+    // Calculate the nearest grid point
+    let snappedLeft = Math.round((currentLeft - ICON_GRID_CONFIG.x) / ICON_GRID_CONFIG.w) * ICON_GRID_CONFIG.w + ICON_GRID_CONFIG.x;
+    let snappedTop = Math.round((currentTop - ICON_GRID_CONFIG.y) / ICON_GRID_CONFIG.h) * ICON_GRID_CONFIG.h + ICON_GRID_CONFIG.y;
+
+    // Constrain to container bounds
+    const maxLeft = container.clientWidth - iconToSnap.clientWidth;
+    const maxTop = container.clientHeight - iconToSnap.clientHeight;
+    snappedLeft = Math.max(ICON_GRID_CONFIG.x, Math.min(snappedLeft, maxLeft));
+    snappedTop = Math.max(ICON_GRID_CONFIG.y, Math.min(snappedTop, maxTop));
+
+    iconToSnap.style.transition = 'left 0.1s ease-out, top 0.1s ease-out';
+    iconToSnap.style.left = `${snappedLeft}px`;
+    iconToSnap.style.top = `${snappedTop}px`;
+
+    setTimeout(() => {
+      if (iconToSnap) iconToSnap.style.transition = '';
+    }, 100);
+  }
+  // If no drag occurred, it was a click. Trigger the click handler.
+  else if (!isDragging && dragItem) {
+    handleIconClick(dragItem);
+  }
+
+  // --- Cleanup ---
+  isDragging = false;
+  dragItem = null;
+
+  document.removeEventListener('mousemove', onIconDragMove);
+  document.removeEventListener('mouseup', onIconDragEnd);
+  document.removeEventListener('touchmove', onIconDragMove);
+  document.removeEventListener('touchend', onIconDragEnd);
+}
+
+// --- Window Dragging Logic ---
+function onWindowDragMove(e) {
+    if (!dragItem || dragItem.classList.contains('maximized')) return;
+    if (e.type === 'touchmove') e.preventDefault();
+
+    isDragging = true; // For windows, dragging starts immediately on move
+
+    const coords = getPointerCoords(e);
+    const taskbarHeight = document.getElementById('taskbar').offsetHeight;
+
+    // We calculate position based on the initial click offset relative to the viewport
+    let newX = coords.x - offsetX;
+    let newY = coords.y - offsetY;
+
+    // Constrain to viewport, leaving space for the taskbar
+    newX = Math.max(0, Math.min(newX, window.innerWidth - dragItem.offsetWidth));
+    newY = Math.max(0, Math.min(newY, window.innerHeight - dragItem.offsetHeight - taskbarHeight));
+
+    dragItem.style.left = newX + 'px';
+    dragItem.style.top = newY + 'px';
+}
+
+function onWindowDragEnd() {
+    document.body.style.userSelect = '';
+    dragItem = null;
+    isDragging = false;
+    document.removeEventListener('mousemove', onWindowDragMove);
+    document.removeEventListener('mouseup', onWindowDragEnd);
+    document.removeEventListener('touchmove', onWindowDragMove);
+    document.removeEventListener('touchend', onWindowDragEnd);
+}
+
+// --- Grid Configuration ---
+const ICON_GRID_CONFIG = {
+    x: 20, // Horizontal offset from the edge
+    y: 20, // Vertical offset from the edge
+    w: 90, // Grid cell width
+    h: 90  // Grid cell height
+};
 
 // Helper to get coordinates from either mouse or touch event
 function getPointerCoords(e) {
@@ -25,24 +181,32 @@ function getPointerCoords(e) {
 }
 
 function makeDraggable(element, handle) {
-    const startDrag = (e) => {
+    const onWindowDragStart = (e) => {
+        // Only drag with left mouse button
         if (e.type === 'mousedown' && e.button !== 0) return;
+        // Don't drag if clicking on a window control button
+        if (e.target.closest('.window-controls')) return;
 
         dragItem = element;
         isDragging = false;
+
         const coords = getPointerCoords(e);
-        dragOffsetX = coords.x - dragItem.offsetLeft;
-        dragOffsetY = coords.y - dragItem.offsetTop;
+        const rect = dragItem.getBoundingClientRect();
+
+        // Calculate offset from top-left of the element relative to viewport
+        offsetX = coords.x - rect.left;
+        offsetY = coords.y - rect.top;
+
         document.body.style.userSelect = 'none';
 
-        document.addEventListener('mousemove', onDragMove);
-        document.addEventListener('touchmove', onDragMove, { passive: false });
-        document.addEventListener('mouseup', onDragEnd, { once: true });
-        document.addEventListener('touchend', onDragEnd, { once: true });
+        document.addEventListener('mousemove', onWindowDragMove);
+        document.addEventListener('touchmove', onWindowDragMove, { passive: false });
+        document.addEventListener('mouseup', onWindowDragEnd);
+        document.addEventListener('touchend', onWindowDragEnd);
     };
 
-    (handle || element).addEventListener('mousedown', startDrag);
-    (handle || element).addEventListener('touchstart', startDrag, { passive: false });
+    (handle || element).addEventListener('mousedown', onWindowDragStart);
+    (handle || element).addEventListener('touchstart', onWindowDragStart, { passive: false });
 }
 
 // Make windows draggable and resizable
@@ -66,64 +230,34 @@ document.querySelectorAll('.window').forEach(win => {
     makeResizable(win);
 });
 
-// Make icons draggable
-document.querySelectorAll('.desktop-icon').forEach(icon => {
-    makeDraggable(icon);
-});
-
-function onDragMove(e) {
-    if (!dragItem) return;
-    if (e.type === 'touchmove') e.preventDefault();
-    if (dragItem.classList.contains('maximized')) return;
-
-    if (!isDragging) {
-        const coords = getPointerCoords(e);
-        const currentX = coords.x - dragOffsetX;
-        const currentY = coords.y - dragOffsetY;
-        const startX = dragItem.offsetLeft;
-        const startY = dragItem.offsetTop;
-        if (Math.abs(currentX - startX) > 5 || Math.abs(currentY - startY) > 5) {
-            isDragging = true;
-        }
-    }
-
-    if (isDragging) {
-        const coords = getPointerCoords(e);
-        let newX = coords.x - dragOffsetX;
-        let newY = coords.y - dragOffsetY;
-        newX = Math.max(0, newX);
-        newY = Math.max(0, newY);
-        dragItem.style.left = newX + 'px';
-        dragItem.style.top = newY + 'px';
-    }
-}
-
-function onDragEnd() {
-    if (isDragging) {
-        setTimeout(() => { isDragging = false; }, 10);
-    }
-    dragItem = null;
-    document.body.style.userSelect = '';
-    document.removeEventListener('mousemove', onDragMove);
-    document.removeEventListener('touchmove', onDragMove);
-}
-
 // --- Icon Click/Double-click Logic ---
 let clickTimer = null;
-document.querySelectorAll('.desktop-icon').forEach(icon => {
-  icon.addEventListener('click', e => {
-    if (isDragging) return; // It was a drag, not a click
+let lastClickedIcon = null;
+
+function handleIconClick(icon) {
     const windowId = icon.dataset.windowId;
     if (!windowId) return;
 
-    if (clickTimer) { // Double-click
-      clearTimeout(clickTimer);
-      clickTimer = null;
-      openWindow(windowId);
-    } else { // Single-click
-      clickTimer = setTimeout(() => { clickTimer = null; }, 300);
+    if (clickTimer && lastClickedIcon === icon) { // Double-click on the same icon
+        clearTimeout(clickTimer);
+        clickTimer = null;
+        lastClickedIcon = null;
+        openWindow(windowId);
+    } else { // Single-click or click on a different icon
+        clearTimeout(clickTimer); // Clear timer for any previous single click
+        lastClickedIcon = icon;
+        // You could add logic here for selecting an icon on single click
+        clickTimer = setTimeout(() => {
+            clickTimer = null;
+            lastClickedIcon = null;
+        }, 300); // 300ms double-click threshold
     }
-  });
+}
+
+document.querySelectorAll('.desktop-icon').forEach(icon => {
+  // This listener initiates both drags and click/double-click detection
+  icon.addEventListener('mousedown', (e) => onIconDragStart(e, icon));
+  icon.addEventListener('touchstart', (e) => onIconDragStart(e, icon), { passive: false });
 });
 
 function openWindow(id){
@@ -551,7 +685,7 @@ initImageViewer();
 // --- Boot/Loading Screen Logic ---
 window.addEventListener('load', () => {
     const loadingScreen = document.getElementById('loading-screen');
-    const desktopContainer = document.getElementById('desktop-container');
+    const desktopContainer = document.getElementById('main-desktop');
     const taskbar = document.getElementById('taskbar');
 
     // Wait for the loading bar animation to finish (3 seconds)
