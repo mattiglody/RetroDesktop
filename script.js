@@ -635,6 +635,7 @@ const pauseBtn = document.getElementById('pauseBtn');
 const stopBtn = document.getElementById('stopBtn');
 const seekBar = document.getElementById('seekBar');
 const volumeControl = document.getElementById('volumeControl');
+const visualizerSelect = document.getElementById('visualizerSelect');
 const nowPlaying = document.getElementById('nowPlaying');
 
 fileInput.addEventListener('change', e => {
@@ -685,18 +686,78 @@ function enableControls(){
   });
 }
 
-function visualize(){
+function visualizeBars() {
+    analyser.getByteFrequencyData(dataArray);
+    ctx.fillStyle = 'black';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    const barWidth = (canvas.width / bufferLength) * 2.5;
+    let x = 0;
+    for (let i = 0; i < bufferLength; i++) {
+        const barHeight = dataArray[i];
+        ctx.fillStyle = 'lime';
+        ctx.fillRect(x, canvas.height - barHeight / 2, barWidth, barHeight / 2);
+        x += barWidth + 1;
+    }
+}
+
+function visualizeWaveform() {
+    analyser.getByteTimeDomainData(dataArray); // Use time domain data for waveform
+    ctx.fillStyle = 'black';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = 'lime';
+    ctx.beginPath();
+    const sliceWidth = canvas.width * 1.0 / bufferLength;
+    let x = 0;
+    for (let i = 0; i < bufferLength; i++) {
+        const v = dataArray[i] / 128.0;
+        const y = v * canvas.height / 2;
+        if (i === 0) {
+            ctx.moveTo(x, y);
+        } else {
+            ctx.lineTo(x, y);
+        }
+        x += sliceWidth;
+    }
+    ctx.lineTo(canvas.width, canvas.height / 2);
+    ctx.stroke();
+}
+
+function visualizeCircle() {
+    analyser.getByteFrequencyData(dataArray);
+    ctx.fillStyle = 'black';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    const centerX = canvas.width / 2;
+    const centerY = canvas.height / 2;
+    const radius = Math.min(centerX, centerY) * 0.2;
+
+    for (let i = 0; i < bufferLength; i++) {
+        const barHeight = dataArray[i] / 2;
+        const angle = (i / bufferLength) * 2 * Math.PI;
+        const x1 = centerX + radius * Math.cos(angle);
+        const y1 = centerY + radius * Math.sin(angle);
+        const x2 = centerX + (radius + barHeight) * Math.cos(angle);
+        const y2 = centerY + (radius + barHeight) * Math.sin(angle);
+        ctx.strokeStyle = 'lime';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(x1, y1);
+        ctx.lineTo(x2, y2);
+        ctx.stroke();
+    }
+}
+
+const visualizers = {
+    'bars': visualizeBars,
+    'waveform': visualizeWaveform,
+    'circle': visualizeCircle
+};
+
+function visualize() {
   animationId = requestAnimationFrame(visualize);
-  analyser.getByteFrequencyData(dataArray);
-  ctx.fillStyle = 'black';
-  ctx.fillRect(0,0,canvas.width,canvas.height);
-  const barWidth = (canvas.width / bufferLength) * 2.5;
-  let x = 0;
-  for(let i=0; i<bufferLength; i++){
-    const barHeight = dataArray[i];
-    ctx.fillStyle = 'lime';
-    ctx.fillRect(x, canvas.height-barHeight/2, barWidth, barHeight/2);
-    x += barWidth + 1;
+  const selectedVisualizer = visualizerSelect.value;
+  if (visualizers[selectedVisualizer]) {
+    visualizers[selectedVisualizer]();
   }
 }
 
