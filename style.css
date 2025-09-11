@@ -71,6 +71,11 @@ body {
   color: #0000ff;
   text-decoration: underline;
 }
+.content ul li {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 #taskbar {
   position: absolute;
   bottom: 0;

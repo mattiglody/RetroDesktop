@@ -67,17 +67,15 @@ function onIconDragMove(e) {
   }
 
   if (isDragging) {
-    const parentContainer = dragItem.parentElement;
-    const parentRect = parentContainer.getBoundingClientRect();
-
-    let newLeft = pointer.x - parentRect.left - offsetX;
-    let newTop = pointer.y - parentRect.top - offsetY;
+    // Calculate new position relative to the viewport, then constrain
+    let newLeft = pointer.x - offsetX;
+    let newTop = pointer.y - offsetY;
 
     // Constrain icon dragging within the desktop container
-    const maxLeft = parentRect.width - dragItem.offsetWidth;
-    const maxTop = parentRect.height - dragItem.offsetHeight;
-    newLeft = Math.max(0, Math.min(newLeft, maxLeft));
-    newTop = Math.max(0, Math.min(newTop, maxTop));
+    const maxLeft = window.innerWidth - dragItem.offsetWidth;
+    const taskbarHeight = document.getElementById('taskbar').offsetHeight;
+    const maxTop = window.innerHeight - dragItem.offsetHeight - taskbarHeight;
+    newTop = Math.max(0, Math.min(newTop, maxTop)); // Ensure it doesn't go above screen or below taskbar
 
     dragItem.style.left = `${newLeft}px`;
     dragItem.style.top = `${newTop}px`;
@@ -105,20 +103,30 @@ function onIconDragEnd() {
 
     // Constrain to container bounds
     const maxLeft = container.clientWidth - iconToSnap.clientWidth;
-    const maxTop = container.clientHeight - iconToSnap.clientHeight;
+    const taskbarHeight = document.getElementById('taskbar').offsetHeight;
+    const maxTop = window.innerHeight - iconToSnap.clientHeight - taskbarHeight;
     snappedLeft = Math.max(ICON_GRID_CONFIG.x, Math.min(snappedLeft, maxLeft));
     snappedTop = Math.max(ICON_GRID_CONFIG.y, Math.min(snappedTop, maxTop));
 
-    iconToSnap.style.transition = 'left 0.1s ease-out, top 0.1s ease-out';
-    iconToSnap.style.left = `${snappedLeft}px`;
-    iconToSnap.style.top = `${snappedTop}px`;
+    // --- Collision Detection ---
+    // Check if the target spot is occupied
+    const otherIcons = Array.from(document.querySelectorAll('.desktop-icon')).filter(i => i !== iconToSnap);
+    let isOccupied = otherIcons.some(other => {
+        return Math.abs(other.offsetLeft - snappedLeft) < ICON_GRID_CONFIG.w / 2 &&
+               Math.abs(other.offsetTop - snappedTop) < ICON_GRID_CONFIG.h / 2;
+    });
 
-    setTimeout(() => {
-      if (iconToSnap) iconToSnap.style.transition = '';
-    }, 100);
-  }
-  // If no drag occurred, it was a click. Trigger the click handler.
-  else if (!isDragging && dragItem) {
+    // If occupied, don't move it (or find next available spot - for now, just revert)
+    if (!isOccupied) {
+        iconToSnap.style.transition = 'left 0.1s ease-out, top 0.1s ease-out';
+        iconToSnap.style.left = `${snappedLeft}px`;
+        iconToSnap.style.top = `${snappedTop}px`;
+        setTimeout(() => {
+          if (iconToSnap) iconToSnap.style.transition = '';
+        }, 100);
+    } // If you wanted to revert, you'd add an else block here. For now, it just stays where it was dropped if occupied.
+
+  } else if (!isDragging && dragItem) { // If no drag occurred, it was a click.
     handleIconClick(dragItem);
   }
 
@@ -260,6 +268,45 @@ document.querySelectorAll('.desktop-icon').forEach(icon => {
   icon.addEventListener('touchstart', (e) => onIconDragStart(e, icon), { passive: false });
 });
 
+/**
+ * Calculates the initial position and size for a new window to avoid icons.
+ * @param {HTMLElement} win - The window element to position.
+ */
+function setInitialWindowPosition(win) {
+    const icons = document.querySelectorAll('.desktop-icon');
+    const taskbarHeight = document.getElementById('taskbar').offsetHeight;
+    const margin = 20; // Margin from edges and icons
+    let rightmostIcon = 0;
+
+    // Find the rightmost edge of all icons
+    icons.forEach(icon => {
+        const iconRight = icon.offsetLeft + icon.offsetWidth;
+        if (iconRight > rightmostIcon) {
+            rightmostIcon = iconRight;
+        }
+    });
+
+    const startX = rightmostIcon + margin;
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+
+    // Use the window's inline or CSS width if it's larger than available space, otherwise fill space
+    const initialWidth = parseInt(win.style.width, 10) || win.offsetWidth;
+    const windowWidth = Math.min(initialWidth, viewportWidth - startX - margin);
+    const windowHeight = win.offsetHeight;
+
+    // Calculate random position within the available space
+    const availableRandomWidth = viewportWidth - startX - windowWidth - margin;
+    const availableRandomHeight = viewportHeight - taskbarHeight - windowHeight - margin;
+
+    const randomX = startX + Math.random() * Math.max(0, availableRandomWidth);
+    const randomY = margin + Math.random() * Math.max(0, availableRandomHeight);
+
+    win.style.width = `${windowWidth}px`;
+    win.style.left = `${Math.max(startX, randomX)}px`;
+    win.style.top = `${Math.max(margin, randomY)}px`;
+}
+
 function openWindow(id){
     const win = document.getElementById(id);
     let tab = taskbarTabsContainer.querySelector(`[data-window-id="${id}"]`);
@@ -284,6 +331,11 @@ function openWindow(id){
     tab.innerHTML = `${tabIconHtml} <span>${title}</span>`;
     tab.onclick = () => focusWindow(id, true); // Pass true for isFromTaskbar
     taskbarTabsContainer.appendChild(tab);
+
+    // Set initial position only if it's a fresh open (not restored)
+    if (win.style.display !== 'flex') {
+        setInitialWindowPosition(win);
+    }
 
     win.style.display = 'flex';
     focusWindow(id);
@@ -313,6 +365,25 @@ function focusWindow(id, isFromTaskbar = false) {
     // Bring window to front
     win.style.zIndex = ++zIndexCounter;
     activeWindowId = id;
+
+    // Ensure the restored window is within bounds
+    const margin = 5; // Small margin from the edges
+    const taskbarHeight = document.getElementById('taskbar').offsetHeight;
+    const winRect = win.getBoundingClientRect();
+    let top = win.offsetTop;
+    let left = win.offsetLeft;
+
+    // Check vertical position (against taskbar)
+    const maxTop = window.innerHeight - winRect.height - taskbarHeight - margin;
+    if (top > maxTop) {
+        win.style.top = `${Math.max(0, maxTop)}px`;
+    }
+
+    // Check horizontal position (against right edge)
+    const maxLeft = window.innerWidth - winRect.width - margin;
+    if (left > maxLeft) {
+        win.style.left = `${Math.max(0, maxLeft)}px`;
+    }
 }
 
 function closeWindow(id){
@@ -320,8 +391,20 @@ function closeWindow(id){
     if (!win) return;
     win.style.display = 'none';
     const tab = taskbarTabsContainer.querySelector(`[data-window-id="${id}"]`);
-    if (tab) tab.remove();
-    if (activeWindowId === id) activeWindowId = null;
+    if (tab) {
+        tab.remove();
+    }
+
+    if (activeWindowId === id) {
+        activeWindowId = null;
+        // Find the next available window to focus
+        const openTabs = taskbarTabsContainer.querySelectorAll('.taskbar-tab');
+        if (openTabs.length > 0) {
+            // Focus the last tab in the list, which is the most recently focused one
+            const nextWindowId = openTabs[openTabs.length - 1].dataset.windowId;
+            focusWindow(nextWindowId);
+        }
+    }
 }
 
 function minimizeWindow(id) {
@@ -679,7 +762,7 @@ function shutdown() {
 }
 
 // Initialize apps
-window.addEventListener('resize', layoutIcons);
+// window.addEventListener('resize', layoutIcons);
 initImageViewer();
 
 // --- Boot/Loading Screen Logic ---
