@@ -695,12 +695,12 @@ volumeControl.oninput = () => {
 
 // --- Image Viewer Logic ---
 const photoAlbum = [
-  { src: `${basePath}pics/photography/delgap.jpg`, caption: 'South West NJ Coast, Del Water Gap' },
-  { src: `${basePath}pics/photography/morntide.jpg`, caption: 'Newport Jersey City Walkway' },
-  { src: `${basePath}pics/photography/moonset.jpg`, caption: 'Hoboken Fire Escape' },
-  { src: `${basePath}pics/photography/nycsuns.jpg`, caption: 'Midtown Sunset' },
-  { src: `${basePath}pics/photography/sherbsky.jpg`, caption: 'Hoboken Fire Escape' },
-  { src: `${basePath}pics/photography/wintrrd.jpg`, caption: 'Adirondack Northway in Winter' }
+  { src: './pics/photography/delgap.jpg', caption: 'South West NJ Coast, Del Water Gap' },
+  { src: './pics/photography/morntide.jpg', caption: 'Newport Jersey City Walkway' },
+  { src: './pics/photography/moonset.jpg', caption: 'Hoboken Fire Escape' },
+  { src: './pics/photography/nycsuns.jpg', caption: 'Midtown Sunset' },
+  { src: './pics/photography/sherbsky.jpg', caption: 'Hoboken Fire Escape' },
+  { src: './pics/photography/wintrrd.jpg', caption: 'Adirondack Northway in Winter' }
 ];
 let currentPhotoIndex = 0;
 
@@ -727,7 +727,7 @@ function displayPhoto(index) {
   if (index < 0 || index >= photoAlbum.length) return;
   currentPhotoIndex = index;
   const photo = photoAlbum[index];
-  mainImage.src = photo.src;
+  mainImage.src = photo.src; // The src is now correct from the start
   mainImage.alt = photo.caption;
   imageCaption.textContent = photo.caption;
   // Update active thumbnail
