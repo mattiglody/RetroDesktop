@@ -695,12 +695,12 @@ volumeControl.oninput = () => {
 
 // --- Image Viewer Logic ---
 const photoAlbum = [
-  { src: `pics/photography/delgap.jpg`, caption: 'South West NJ Coast, Del Water Gap' },
-  { src: `pics/photography/morntide.jpg`, caption: 'Newport Jersey City Walkway' },
-  { src: `pics/photography/moonset.jpg`, caption: 'Hoboken Fire Escape' },
-  { src: `pics/photography/nycsuns.jpg`, caption: 'Midtown Sunset' },
-  { src: `pics/photography/sherbsky.jpg`, caption: 'Hoboken Fire Escape' },
-  { src: `pics/photography/wintrrd.jpg`, caption: 'Adirondack Northway in Winter' }
+  { src: `${basePath}pics/photography/delgap.jpg`, caption: 'South West NJ Coast, Del Water Gap' },
+  { src: `${basePath}pics/photography/morntide.jpg`, caption: 'Newport Jersey City Walkway' },
+  { src: `${basePath}pics/photography/moonset.jpg`, caption: 'Hoboken Fire Escape' },
+  { src: `${basePath}pics/photography/nycsuns.jpg`, caption: 'Midtown Sunset' },
+  { src: `${basePath}pics/photography/sherbsky.jpg`, caption: 'Hoboken Fire Escape' },
+  { src: `${basePath}pics/photography/wintrrd.jpg`, caption: 'Adirondack Northway in Winter' }
 ];
 let currentPhotoIndex = 0;
 
@@ -713,8 +713,8 @@ const nextImageBtn = document.getElementById('nextImageBtn');
 function initImageViewer() {
   thumbnailBar.innerHTML = ''; // Clear existing thumbnails
   photoAlbum.forEach((photo, index) => {
-    const thumb = document.createElement('img'); 
-    thumb.src = basePath + photo.src;
+    const thumb = document.createElement('img');
+    thumb.src = photo.src;
     thumb.alt = photo.caption;
     thumb.dataset.index = index;
     thumb.onclick = () => displayPhoto(index);
@@ -727,7 +727,7 @@ function displayPhoto(index) {
   if (index < 0 || index >= photoAlbum.length) return;
   currentPhotoIndex = index;
   const photo = photoAlbum[index];
-  mainImage.src = basePath + photo.src;
+  mainImage.src = photo.src;
   mainImage.alt = photo.caption;
   imageCaption.textContent = photo.caption;
   // Update active thumbnail
