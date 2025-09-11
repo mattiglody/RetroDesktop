@@ -337,6 +337,11 @@ function openWindow(id){
         setInitialWindowPosition(win);
     }
 
+    // If opening explorer, populate it
+    if (id === 'explorerWindow') {
+        populateExplorer();
+    }
+
     win.style.display = 'flex';
     focusWindow(id);
 }
@@ -480,7 +485,8 @@ window.addEventListener('keydown', e => {
 
 startMenu.addEventListener('click', e => {
   const targetLi = e.target.closest('li');
-  if (!targetLi) return;
+  if (!targetLi || targetLi.classList.contains('has-submenu')) return; // Ignore clicks on submenu parents
+
   const windowId = targetLi.dataset.windowId;
   if (windowId) {
     openWindow(windowId);
@@ -489,6 +495,27 @@ startMenu.addEventListener('click', e => {
   } else if (targetLi.id === 'shutdownBtn') {
     shutdown();
   }
+});
+
+startMenu.addEventListener('mouseover', e => {
+    const targetLi = e.target.closest('li');
+    if (targetLi && targetLi.classList.contains('has-submenu')) {
+        const submenu = targetLi.querySelector('.submenu');
+        if (!submenu) return;
+
+        const taskbarHeight = document.getElementById('taskbar').offsetHeight;
+        const menuRect = submenu.getBoundingClientRect();
+        const parentRect = targetLi.getBoundingClientRect();
+
+        // If the bottom of the submenu would go past the top of the taskbar
+        if (parentRect.top + menuRect.height > window.innerHeight - taskbarHeight) {
+            submenu.style.top = `auto`;
+            submenu.style.bottom = `0px`;
+        } else {
+            submenu.style.top = `-2px`;
+            submenu.style.bottom = `auto`;
+        }
+    }
 });
 
 // --- Context Menu Logic ---
@@ -903,6 +930,28 @@ if (runInput) {
         if (e.key === 'Enter') {
             executeRunCommand();
         }
+    });
+}
+
+// --- Explorer Logic ---
+function populateExplorer() {
+    const fileList = document.getElementById('fileList');
+    fileList.innerHTML = ''; // Clear previous content
+
+    const desktopIcons = document.querySelectorAll('.desktop-icon');
+    desktopIcons.forEach(icon => {
+        const li = document.createElement('li');
+        const img = icon.querySelector('img').cloneNode();
+        img.className = 'explorer-icon'; // Add a class for styling
+        const text = icon.innerText;
+        const windowId = icon.dataset.windowId;
+
+        li.innerHTML = `${img.outerHTML} <span>${text}</span>`;
+        li.style.cssText = 'display: flex; align-items: center; gap: 8px; padding: 5px; cursor: pointer;';
+        li.onclick = () => openWindow(windowId);
+        li.onmouseover = () => li.style.background = '#e0e0e0';
+        li.onmouseout = () => li.style.background = 'white';
+        fileList.appendChild(li);
     });
 }
 
