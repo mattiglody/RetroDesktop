@@ -761,6 +761,77 @@ function shutdown() {
   }, 1500); // Close after 1.5 seconds
 }
 
+// --- Terminal Logic ---
+const terminalInput = document.getElementById('terminalInput');
+const terminalOutput = document.getElementById('terminalOutput');
+
+const commands = {
+    'help': {
+        description: 'Shows a list of available commands.',
+        execute: () => {
+            let helpText = 'Available commands:\n\n';
+            for (const cmd in commands) {
+                helpText += `${cmd.padEnd(10)} - ${commands[cmd].description}\n`;
+            }
+            return helpText;
+        }
+    },
+    'clear': {
+        description: 'Clears the terminal screen.',
+        execute: () => {
+            terminalOutput.innerHTML = '';
+            return ''; // No output message
+        }
+    },
+    'about': { description: 'Opens the "About Me" window.', execute: () => openWindow('aboutWindow') },
+    'projects': { description: 'Opens the "My Projects" window.', execute: () => openWindow('projectsWindow') },
+    'contact': { description: 'Opens the "Contact" window.', execute: () => openWindow('contactWindow') },
+    'photos': { description: 'Opens the "My Photos" window.', execute: () => openWindow('imageViewerWindow') },
+    'media': { description: 'Opens the "Media Player" window.', execute: () => openWindow('mediaPlayer') },
+    'notepad': { description: 'Opens the "Notepad" window.', execute: () => openWindow('notepadWindow') },
+    'date': {
+        description: 'Displays the current date and time.',
+        execute: () => new Date().toString()
+    }
+};
+
+function processCommand(command) {
+    const outputLine = document.createElement('div');
+    outputLine.textContent = `C:\\>${command}`;
+    terminalOutput.appendChild(outputLine);
+
+    const cmd = command.toLowerCase().trim();
+    if (commands[cmd]) {
+        const result = commands[cmd].execute();
+        if (result) {
+            const resultLine = document.createElement('div');
+            resultLine.textContent = result;
+            terminalOutput.appendChild(resultLine);
+        }
+    } else if (cmd !== '') {
+        const errorLine = document.createElement('div');
+        errorLine.textContent = `Bad command or file name: "${command}"`;
+        terminalOutput.appendChild(errorLine);
+    }
+
+    // Scroll to bottom
+    terminalOutput.scrollTop = terminalOutput.scrollHeight;
+}
+
+if (terminalInput) {
+    terminalInput.addEventListener('keydown', e => {
+        if (e.key === 'Enter') {
+            processCommand(terminalInput.value);
+            terminalInput.value = '';
+        }
+    });
+    // Focus input when terminal window is clicked
+    const terminalWindow = document.getElementById('terminalWindow');
+    if (terminalWindow) {
+        terminalWindow.addEventListener('click', () => terminalInput.focus());
+    }
+}
+
 // Initialize apps
 // window.addEventListener('resize', layoutIcons);
 initImageViewer();

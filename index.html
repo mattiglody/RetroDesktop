@@ -197,6 +197,26 @@
       <textarea id="notepadTextarea" placeholder="Type your notes here..."></textarea>
     </div>
     <div class="resize-handle"></div>
+  </div>
+
+  <!-- Terminal Window -->
+  <div class="window" id="terminalWindow">
+    <div class="title-bar">
+      <span>C:\WINDOWS\system32\command.com</span>
+      <div>
+        <button class="win-btn minimize-btn" title="Minimize">_</button>
+        <button class="win-btn maximize-btn" title="Maximize"></button>
+        <button class="win-btn close-btn" title="Close">X</button>
+      </div>
+    </div>
+    <div class="content" id="terminalContent">
+      <div id="terminalOutput"></div>
+      <div class="terminal-input-line">
+        <span class="prompt">C:\&gt;</span>
+        <input type="text" id="terminalInput" autocomplete="off" spellcheck="false" />
+      </div>
+    </div>
+    <div class="resize-handle"></div>
   </div>    
   </div>
   <div id="taskbar" class="hidden">
@@ -238,6 +258,10 @@
       <li data-window-id="notepadWindow">
         <img src="./pics/icons/textedit.png" />
         <span><b>N</b>otepad</span>
+      </li>
+      <li data-window-id="terminalWindow">
+        <img src="./pics/icons/msdos.png" />
+        <span>MS-<b>D</b>OS Prompt</span>
       </li>
       <li class="separator"></li>
       <li id="shutdownBtn">

@@ -472,3 +472,39 @@ select.win-button {
     width: 100%;
   }
 }
+
+/* --- Terminal Styles --- */
+#terminalContent {
+  background: black;
+  color: #00FF00; /* Classic green text */
+  font-family: 'Courier New', Courier, monospace;
+  padding: 5px;
+  display: flex;
+  flex-direction: column;
+}
+
+#terminalOutput {
+  flex-grow: 1;
+  overflow-y: auto;
+  white-space: pre-wrap; /* Preserve whitespace and wrap lines */
+  word-break: break-all;
+}
+
+.terminal-input-line {
+  display: flex;
+  align-items: center;
+}
+
+.prompt {
+  white-space: nowrap;
+}
+
+#terminalInput {
+  flex-grow: 1;
+  background: none;
+  border: none;
+  outline: none;
+  color: #00FF00;
+  font-family: 'Courier New', Courier, monospace;
+  padding-left: 5px;
+}
