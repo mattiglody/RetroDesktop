@@ -221,7 +221,30 @@ Type 'help' for a list of commands.</pre>
       </div>
     </div>
     <div class="resize-handle"></div>
-  </div>    
+  </div>
+
+  <!-- Run Dialog Window -->
+  <div class="window" id="runDialogWindow" style="width: 380px; height: auto;">
+    <div class="title-bar">
+      <span>Run</span>
+      <div>
+        <button class="win-btn close-btn" title="Close">X</button>
+      </div>
+    </div>
+    <div class="content" id="runDialogContent">
+      <img src="./pics/icons/run.png" alt="Run icon" style="width: 32px; height: 32px; margin-right: 10px;">
+      <div style="flex-grow: 1;">
+        <p>Type the name of a program, folder, document, or Internet resource, and Windows will open it for you.</p>
+        <label for="runInput"><u>O</u>pen:</label>
+        <input type="text" id="runInput" autocomplete="off" spellcheck="false" />
+      </div>
+    </div>
+    <div class="run-dialog-buttons">
+      <button id="runOkBtn">OK</button>
+      <button id="runCancelBtn">Cancel</button>
+      <button id="runBrowseBtn">Browse...</button>
+    </div>
+  </div>
   </div>
   <div id="taskbar" class="hidden">
     <div id="start">
@@ -266,6 +289,11 @@ Type 'help' for a list of commands.</pre>
       <li data-window-id="terminalWindow">
         <img src="./pics/icons/msdos.png" />
         <span>MS-<b>D</b>OS Prompt</span>
+      </li>
+      <li class="separator"></li>
+      <li data-window-id="runDialogWindow">
+        <img src="./pics/icons/run.png" />
+        <span><b>R</b>un...</span>
       </li>
       <li class="separator"></li>
       <li id="shutdownBtn">

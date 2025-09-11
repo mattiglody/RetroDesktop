@@ -463,11 +463,18 @@ document.addEventListener('click', e => {
 });
 
 // --- Global Key Listener ---
-document.addEventListener('keydown', e => {
+window.addEventListener('keydown', e => {
   if (e.key === 'Escape') {
     if (activeWindowId) {
       closeWindow(activeWindowId);
     }
+  } else if (e.metaKey && e.key.toLowerCase() === 'r') {
+    // Meta key is the Windows key on Windows, Command key on Mac
+    e.preventDefault(); // Prevent the browser/OS default Run dialog
+    e.stopPropagation(); // Stop the event from propagating further
+    openWindow('runDialogWindow');
+    // Focus the input field after opening
+    document.getElementById('runInput').focus();
   }
 });
 
@@ -868,6 +875,35 @@ if (terminalInput) {
     if (terminalWindow) {
         terminalWindow.addEventListener('click', () => terminalInput.focus());
     }
+}
+
+// --- Run Dialog Logic ---
+const runInput = document.getElementById('runInput');
+const runOkBtn = document.getElementById('runOkBtn');
+const runCancelBtn = document.getElementById('runCancelBtn');
+
+function executeRunCommand() {
+    const command = runInput.value.trim();
+    if (command) {
+        const cmdKey = command.toLowerCase().split(' ')[0];
+        if (commands[cmdKey]) {
+            commands[cmdKey].execute();
+        } else {
+            alert(`Cannot find the file '${command}'. Make sure you typed the name correctly, and then try again.`);
+        }
+        runInput.value = '';
+        closeWindow('runDialogWindow');
+    }
+}
+
+if (runInput) {
+    runOkBtn.addEventListener('click', executeRunCommand);
+    runCancelBtn.addEventListener('click', () => closeWindow('runDialogWindow'));
+    runInput.addEventListener('keydown', e => {
+        if (e.key === 'Enter') {
+            executeRunCommand();
+        }
+    });
 }
 
 // Initialize apps

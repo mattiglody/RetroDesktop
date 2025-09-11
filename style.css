@@ -520,3 +520,30 @@ select.win-button {
   font-family: 'Courier New', Courier, monospace;
   padding-left: 5px;
 }
+
+/* --- Run Dialog Styles --- */
+#runDialogContent {
+  background: #c0c0c0;
+  display: flex;
+  align-items: center;
+}
+
+#runDialogContent p {
+  margin-top: 0;
+}
+
+#runInput {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.run-dialog-buttons {
+  background: #c0c0c0;
+  padding: 10px;
+  text-align: right;
+}
+
+.run-dialog-buttons button {
+  width: 75px;
+  margin-left: 5px;
+}
