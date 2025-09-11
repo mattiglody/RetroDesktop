@@ -765,6 +765,10 @@ function shutdown() {
 const terminalInput = document.getElementById('terminalInput');
 const terminalOutput = document.getElementById('terminalOutput');
 
+const commandHistory = [];
+let historyIndex = -1;
+
+
 const commands = {
     'help': {
         description: 'Shows a list of available commands.',
@@ -792,6 +796,20 @@ const commands = {
     'date': {
         description: 'Displays the current date and time.',
         execute: () => new Date().toString()
+    },
+    'exit': {
+        description: 'Closes the command prompt.',
+        execute: () => closeWindow('terminalWindow')
+    },
+    'log': {
+        description: 'Displays the command history for the current session.',
+        execute: () => {
+            if (commandHistory.length === 0) {
+                return 'No commands in history.';
+            }
+            // Join history with line breaks for display
+            return commandHistory.join('\n');
+        }
     }
 };
 
@@ -801,8 +819,11 @@ function processCommand(command) {
     commandLineDiv.textContent = `C:\\>${command}`;
     terminalOutput.appendChild(commandLineDiv);
 
-    // Add a line break after the command for better readability before output
-    terminalOutput.appendChild(document.createElement('br'));
+    if (command.trim() !== '') {
+        commandHistory.push(command);
+        historyIndex = commandHistory.length; // Reset index to the end
+    }
+
 
     const cmd = command.toLowerCase().trim().split(' ')[0];
     if (commands[cmd]) {
@@ -818,19 +839,28 @@ function processCommand(command) {
         terminalOutput.appendChild(errorLine);
     }
 
-    // Add a line break after the result for better separation
-    terminalOutput.appendChild(document.createElement('br'));
-
     // Scroll to bottom
     terminalOutput.scrollTop = terminalOutput.scrollHeight;
 }
 
 if (terminalInput) {
     terminalInput.addEventListener('keydown', e => {
-        if (e.key === 'Enter') {
+        if (e.key === 'Enter' && terminalInput.value.trim() !== '') {
             processCommand(terminalInput.value); // Process the command
             terminalInput.value = ''; // Clear the input field
             terminalInput.focus(); // Ensure input field remains focused
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault(); // Prevent cursor from moving to start
+            if (historyIndex > 0) {
+                historyIndex--;
+                terminalInput.value = commandHistory[historyIndex];
+            }
+        } else if (e.key === 'ArrowDown') {
+            e.preventDefault(); // Prevent cursor from moving to end
+            if (historyIndex < commandHistory.length - 1) {
+                historyIndex++;
+                terminalInput.value = commandHistory[historyIndex];
+            }
         }
     });
     // Focus input when terminal window is clicked
