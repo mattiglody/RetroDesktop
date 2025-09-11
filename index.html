@@ -200,7 +200,7 @@
   </div>
 
   <!-- Terminal Window -->
-  <div class="window" id="terminalWindow">
+  <div class="window" id="terminalWindow" style="width: 500px; height: 350px;">
     <div class="title-bar">
       <span>C:\WINDOWS\system32\command.com</span>
       <div>
@@ -210,7 +210,11 @@
       </div>
     </div>
     <div class="content" id="terminalContent">
-      <div id="terminalOutput"></div>
+      <div id="terminalOutput">
+        <div>Retro-DOS [Version 1.0.0]</div>
+        <div>(c) 2024 Matthew Iglody. All rights reserved.</div>
+        <div class="welcome-message">Type 'help' for a list of commands.</div>
+      </div>
       <div class="terminal-input-line">
         <span class="prompt">C:\&gt;</span>
         <input type="text" id="terminalInput" autocomplete="off" spellcheck="false" />

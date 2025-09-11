@@ -796,11 +796,15 @@ const commands = {
 };
 
 function processCommand(command) {
-    const outputLine = document.createElement('div');
-    outputLine.textContent = `C:\\>${command}`;
-    terminalOutput.appendChild(outputLine);
+    // Append the command itself to the output history
+    const commandLineDiv = document.createElement('div');
+    commandLineDiv.textContent = `C:\\>${command}`;
+    terminalOutput.appendChild(commandLineDiv);
 
-    const cmd = command.toLowerCase().trim();
+    // Add a line break after the command for better readability before output
+    terminalOutput.appendChild(document.createElement('br'));
+
+    const cmd = command.toLowerCase().trim().split(' ')[0];
     if (commands[cmd]) {
         const result = commands[cmd].execute();
         if (result) {
@@ -814,6 +818,9 @@ function processCommand(command) {
         terminalOutput.appendChild(errorLine);
     }
 
+    // Add a line break after the result for better separation
+    terminalOutput.appendChild(document.createElement('br'));
+
     // Scroll to bottom
     terminalOutput.scrollTop = terminalOutput.scrollHeight;
 }
@@ -821,8 +828,9 @@ function processCommand(command) {
 if (terminalInput) {
     terminalInput.addEventListener('keydown', e => {
         if (e.key === 'Enter') {
-            processCommand(terminalInput.value);
-            terminalInput.value = '';
+            processCommand(terminalInput.value); // Process the command
+            terminalInput.value = ''; // Clear the input field
+            terminalInput.focus(); // Ensure input field remains focused
         }
     });
     // Focus input when terminal window is clicked
