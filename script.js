@@ -627,6 +627,22 @@ function stopResize() {
 let audioCtx, analyser, sourceNode, bufferLength, dataArray, animationId, audioElement;
 
 const fileInput = document.getElementById('audioFile');
+const playlistDropdown = document.getElementById('playlistDropdown');
+const browseAudioBtn = document.getElementById('browseAudioBtn');
+
+// --- Playlist Configuration ---
+const playlist = [
+    { name: "Zwan_Love_Lies_in_Ruin_acoustic_2003.mp3", path: 'C:/Users/Matthew/Documents/GitHub/RetroDesktop/media/Zwan_Love_Lies_in_Ruin_acoustic_2003.mp3' },
+    { name: "Praise_You_Fatboy_Slim.mp3", path: 'media/Praise_You_Fatboy_Slim.mp3' },
+    { name: "Jethro_Tull_Teacher.mp3", path: 'media/Jethro_Tull_Teacher.mp3' },
+    // Add more songs here
+];
+
+function populatePlaylist() {
+    playlist.forEach((song, index) => {
+        playlistDropdown.innerHTML += `<option value="${index}">${song.name}</option>`;
+    });
+}
 const canvas = document.getElementById('visualizer');
 const ctx = canvas.getContext('2d');
 
@@ -638,26 +654,32 @@ const volumeControl = document.getElementById('volumeControl');
 const visualizerSelect = document.getElementById('visualizerSelect');
 const nowPlaying = document.getElementById('nowPlaying');
 
-fileInput.addEventListener('change', e => {
-  const file = e.target.files[0];
-  if (file) {
+function loadSong(song) {
+    // The 'song' object can have a 'path' (from playlist) or 'url' (from file upload)
     if (audioElement) {
-      audioElement.pause();
-      cancelAnimationFrame(animationId);
+        audioElement.pause();
+        cancelAnimationFrame(animationId);
     }
-    audioElement = new Audio(URL.createObjectURL(file));
+
+    const audioSrc = song.url ? song.url : basePath + song.path;
+    audioElement = new Audio(audioSrc);
     audioElement.crossOrigin = "anonymous";
 
-    if (!audioCtx) {
-      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      analyser = audioCtx.createAnalyser();
-      analyser.connect(audioCtx.destination);
-      analyser.fftSize = 256;
+    // When loading a new song, reset the dropdown unless it's from the playlist
+    if (song.url) {
+        playlistDropdown.value = "";
     }
-    
+
+    if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        analyser = audioCtx.createAnalyser();
+        analyser.connect(audioCtx.destination);
+        analyser.fftSize = 256;
+    }
+
     sourceNode = audioCtx.createMediaElementSource(audioElement);
     sourceNode.connect(analyser);
-    
+
     bufferLength = analyser.frequencyBinCount;
     dataArray = new Uint8Array(bufferLength);
 
@@ -665,18 +687,37 @@ fileInput.addEventListener('change', e => {
     canvas.width = canvas.clientWidth;
     canvas.height = canvas.clientHeight;
 
-    nowPlaying.textContent = file.name;
+    nowPlaying.textContent = song.name;
     nowPlaying.style.display = 'block';
 
     enableControls();
 
     // Update seek bar
     audioElement.ontimeupdate = () => {
-      if (audioElement.duration) {
-        seekBar.value = (audioElement.currentTime / audioElement.duration) * 100;
-      }
+        if (audioElement.duration) {
+            seekBar.value = (audioElement.currentTime / audioElement.duration) * 100;
+        }
     };
-  }
+}
+
+playlistDropdown.addEventListener('change', e => {
+    const songIndex = e.target.value;
+    if (songIndex !== "") {
+        loadSong(playlist[songIndex]);
+    }
+});
+
+browseAudioBtn.addEventListener('click', () => {
+    fileInput.click(); // Trigger the hidden file input
+});
+
+fileInput.addEventListener('change', e => {
+    const file = e.target.files[0];
+    if (file) {
+        const fileUrl = URL.createObjectURL(file);
+        // Pass a song-like object to loadSong
+        loadSong({ name: file.name, url: fileUrl });
+    }
 });
 
 function enableControls(){
@@ -761,10 +802,19 @@ function visualize() {
   }
 }
 
-playBtn.onclick = () => {
-  audioElement.play();
-  audioCtx.resume();
-  visualize();
+playBtn.onclick = async () => {
+    if (!audioElement) return; // Do nothing if no song is loaded
+
+    try {
+        // Resume context if it's suspended, which is required by modern browsers
+        if (audioCtx && audioCtx.state === 'suspended') {
+            await audioCtx.resume();
+        }
+        await audioElement.play();
+        visualize();
+    } catch (err) {
+        console.error("Error playing audio:", err);
+    }
 };
 pauseBtn.onclick = () => {
   audioElement.pause();
@@ -790,12 +840,12 @@ volumeControl.oninput = () => {
 
 // --- Image Viewer Logic ---
 const photoAlbum = [
-  { src: './pics/photography/delgap.jpg', caption: 'South West NJ Coast, Del Water Gap' },
-  { src: './pics/photography/morntide.jpg', caption: 'Newport Jersey City Walkway' },
-  { src: './pics/photography/moonset.jpg', caption: 'Hoboken Fire Escape' },
-  { src: './pics/photography/nycsuns.jpg', caption: 'Midtown Sunset' },
-  { src: './pics/photography/sherbsky.jpg', caption: 'Hoboken Fire Escape' },
-  { src: './pics/photography/wintrrd.jpg', caption: 'Adirondack Northway in Winter' }
+  { src: 'pics/photography/delgap.jpg', caption: 'South West NJ Coast, Del Water Gap' },
+  { src: 'pics/photography/morntide.jpg', caption: 'Newport Jersey City Walkway' },
+  { src: 'pics/photography/moonset.jpg', caption: 'Hoboken Fire Escape' },
+  { src: 'pics/photography/nycsuns.jpg', caption: 'Midtown Sunset' },
+  { src: 'pics/photography/sherbsky.jpg', caption: 'Hoboken Fire Escape' },
+  { src: 'pics/photography/wintrrd.jpg', caption: 'Adirondack Northway in Winter' }
 ];
 let currentPhotoIndex = 0;
 
@@ -809,7 +859,7 @@ function initImageViewer() {
   thumbnailBar.innerHTML = ''; // Clear existing thumbnails
   photoAlbum.forEach((photo, index) => {
     const thumb = document.createElement('img');
-    thumb.src = photo.src;
+    thumb.src = basePath + photo.src;
     thumb.alt = photo.caption;
     thumb.dataset.index = index;
     thumb.onclick = () => displayPhoto(index);
@@ -822,7 +872,7 @@ function displayPhoto(index) {
   if (index < 0 || index >= photoAlbum.length) return;
   currentPhotoIndex = index;
   const photo = photoAlbum[index];
-  mainImage.src = photo.src; // The src is now correct from the start
+  mainImage.src = basePath + photo.src;
   mainImage.alt = photo.caption;
   imageCaption.textContent = photo.caption;
   // Update active thumbnail
@@ -1018,26 +1068,13 @@ function populateExplorer() {
 
 // Initialize apps
 // window.addEventListener('resize', layoutIcons);
+populatePlaylist();
 initImageViewer();
 
 // --- Boot/Loading Screen Logic ---
-window.addEventListener('load', () => {
-    const loadingScreen = document.getElementById('loading-screen');
-    const desktopContainer = document.getElementById('main-desktop');
-    const taskbar = document.getElementById('taskbar');
-
-    // Wait for the loading bar animation to finish (3 seconds)
-    setTimeout(() => {
-        // Fade out the loading screen
-        loadingScreen.style.opacity = '0';
-
-        // After fade out, hide it and show the desktop
-        setTimeout(() => {
-            loadingScreen.style.display = 'none';
-            desktopContainer.classList.remove('hidden');
-            taskbar.classList.remove('hidden');
-            // Re-layout icons now that the desktop is visible
-            layoutIcons();
-        }, 500); // This should match the transition duration in CSS
-    }, 3000); // This should match the animation duration in CSS
+// For development: Immediately show the desktop and skip the loading screen.
+document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('main-desktop').classList.remove('hidden');
+    document.getElementById('taskbar').classList.remove('hidden');
+    layoutIcons();
 });
