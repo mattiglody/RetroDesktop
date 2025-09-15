@@ -631,20 +631,6 @@ const playlistDropdown = document.getElementById('playlistDropdown');
 const browseAudioBtn = document.getElementById('browseAudioBtn');
 
 const audioElement = document.getElementById('media-player-audio');
-
-// --- Playlist Configuration ---
-const playlist = [
-    { name: "zwan_love_lies_in_ruin_acoustic_2003.mp3", path: './media/zwan_love_lies_in_ruin_acoustic_2003.mp3' },
-    { name: "praise_you_fatboy_slim.mp3", path: './media/praise_you_fatboy_slim.mp3' },
-    { name: "jethro_tull_teacher.mp3", path: './media/jethro_tull_teacher.mp3' },
-    // Add more songs here
-];
-
-function populatePlaylist() {
-    playlist.forEach((song, index) => {
-        playlistDropdown.innerHTML += `<option value="${index}">${song.name}</option>`;
-    });
-}
 const canvas = document.getElementById('visualizer');
 const ctx = canvas.getContext('2d');
 
@@ -656,66 +642,60 @@ const volumeControl = document.getElementById('volumeControl');
 const visualizerSelect = document.getElementById('visualizerSelect');
 const nowPlaying = document.getElementById('nowPlaying');
 
-function setupAudioContext() {
-    if (!audioCtx) {
-        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        analyser = audioCtx.createAnalyser();
-        sourceNode = audioCtx.createMediaElementSource(audioElement);
-        
-        sourceNode.connect(analyser);
-        analyser.connect(audioCtx.destination);
-        analyser.fftSize = 256;
+// --- Playlist Configuration ---
+const playlist = [
+    { name: "zwan_love_lies_in_ruin_acoustic_2003.mp3", path: "./media/zwan_love_lies_in_ruin_acoustic_2003.mp3" },
+    { name: "praise_you_fatboy_slim.mp3", path: './media/praise_you_fatboy_slim.mp3' },
+    { name: "jethro_tull_teacher.mp3", path: './media/jethro_tull_teacher.mp3' },
+    // Add more songs here
+];
 
-        bufferLength = analyser.frequencyBinCount;
-        dataArray = new Uint8Array(bufferLength);
-    }
+function populatePlaylist() {
+    playlist.forEach((song, index) => {
+        playlistDropdown.innerHTML += `<option value="${index}">${song.name}</option>`;
+    });
 }
 
 function loadSong(song) {
-    // The 'song' object can have a 'path' (from playlist) or 'url' (from file upload)
-    if (audioElement.src) {
-        audioElement.pause();
+    // Stop any current playback and animation
+    audioElement.pause();
+    audioElement.currentTime = 0;
+    if (animationId) {
         cancelAnimationFrame(animationId);
         animationId = null;
     }
-
-    // This is the definitive fix: Construct a full, absolute URL.
-    // This prevents any ambiguity for the browser when loading the source.
-    const audioSrc = song.url ? song.url : `${window.location.origin}${basePath}${song.path}`;
-
-    audioElement.src = audioSrc;
-
-    // When loading a new song from a file, reset the dropdown
-    if (song.url) {
-        playlistDropdown.value = "";
+    
+    // If a song object is provided, load it. Otherwise, we're just stopping.
+    if (song && song.path) {
+        const audioSrc = song.url ? song.url : new URL(song.path.replace('./', ''), window.location.href).href;
+        audioElement.src = audioSrc;
+        nowPlaying.textContent = song.name;
+        nowPlaying.style.display = 'block';
+        enableControls();
+    } else {
+        audioElement.src = '';
+        nowPlaying.style.display = 'none';
+        seekBar.value = 0;
+        disableControls();
     }
 
-    nowPlaying.textContent = song.name;
-    nowPlaying.style.display = 'block';
+    // If the audio graph exists, we need to reconnect the source for the new src
+    if (audioCtx && sourceNode) {
+        sourceNode.disconnect();
+        sourceNode = audioCtx.createMediaElementSource(audioElement);
+        sourceNode.connect(analyser);
+    }
 
-    enableControls();
+    // When loading a new song from a file, reset the dropdown
+    if (song && song.url) {
+        playlistDropdown.value = "";
+    }
+}
 
-    audioElement.ontimeupdate = () => {
-        if (audioElement && audioElement.duration) {
-            seekBar.value = (audioElement.currentTime / audioElement.duration) * 100;
-        }
-    };
-
-    // The most robust fix: Wait for the browser to confirm it can play the media.
-    const playWhenReady = () => {
-        // This event listener should only run once per song load.
-        audioElement.removeEventListener('canplaythrough', playWhenReady);
-
-        audioElement.play().then(() => {
-            // Setup audio context if it's the very first play
-            setupAudioContext();
-            visualize();
-        }).catch(err => {
-            console.error("Error auto-playing song:", err);
-        });
-    };
-
-    audioElement.addEventListener('canplaythrough', playWhenReady);
+function loadSongByUrl(file) {
+    const fileUrl = URL.createObjectURL(file);
+    const audioSrc = song.url ? song.url : new URL(song.path.replace('./', ''), window.location.href).href;
+    loadSong({ name: file.name, url: fileUrl, path: fileUrl });
 }
 
 playlistDropdown.addEventListener('change', e => {
@@ -732,14 +712,12 @@ browseAudioBtn.addEventListener('click', () => {
 fileInput.addEventListener('change', e => {
     const file = e.target.files[0];
     if (file) {
-        const fileUrl = URL.createObjectURL(file);
-        // Pass a song-like object to loadSong
-        loadSong({ name: file.name, url: fileUrl });
+        loadSongByUrl(file);
     }
 });
 
 function enableControls(){
-  [playBtn,pauseBtn,stopBtn,seekBar,volumeControl].forEach(el=>{
+  [playBtn, pauseBtn, stopBtn, seekBar, volumeControl, prevBtn, nextBtn].forEach(el=>{
     el.classList.remove('disabled');
     el.disabled = false;
   });
@@ -821,28 +799,38 @@ function visualize() {
 }
 
 playBtn.onclick = async () => {
-    // If there's no song loaded, do nothing.
-    if (!audioElement.src) return;
-
-    // Toggle play/pause
-    if (audioElement.paused) {
-        try {
-            // Resume audio context if needed
-            if (audioCtx && audioCtx.state === 'suspended') {
-                await audioCtx.resume();
-            }
-            await audioElement.play();
-            visualize(); // Restart visualization if it was stopped
-        } catch (err) {
-            console.error("Error resuming audio:", err);
+    if (!audioElement.src || audioElement.src === '') return;
+    
+    try {
+        // --- THIS IS THE FUNDAMENTAL FIX ---
+        // Create the audio context on the first user interaction (play click)
+        if (!audioCtx) {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            analyser = audioCtx.createAnalyser();
+            sourceNode = audioCtx.createMediaElementSource(audioElement);
+            
+            sourceNode.connect(analyser);
+            analyser.connect(audioCtx.destination);
+            
+            analyser.fftSize = 256;
+            bufferLength = analyser.frequencyBinCount;
+            dataArray = new Uint8Array(bufferLength);
         }
-    } else {
-        audioElement.pause();
-        cancelAnimationFrame(animationId); // Stop visualization
+
+        // If context is suspended (e.g., by browser policy), resume it.
+        if (audioCtx.state === 'suspended') {
+            await audioCtx.resume();
+        }
+
+        await audioElement.play();
+        visualize();
+
+    } catch (err) {
+        console.error("Error trying to play audio:", err);
     }
 };
 pauseBtn.onclick = () => {
-  if (!audioElement) return;
+  if (!audioElement || !audioElement.src) return;
   audioElement.pause();
   cancelAnimationFrame(animationId);
 };
@@ -850,25 +838,33 @@ stopBtn.onclick = () => {
   if (!audioElement || !audioElement.src) return;
   audioElement.pause();
   audioElement.currentTime = 0;
-  cancelAnimationFrame(animationId);
-  animationId = null;
-  // Clear canvas and title
-  ctx.fillStyle = 'black';
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-  nowPlaying.style.display = 'none';
+  if (animationId) {
+      cancelAnimationFrame(animationId);
+      animationId = null;
+  }
+  loadSong(null); // Reset the player
 };
 seekBar.oninput = () => {
   if (!audioElement || !audioElement.src || !audioElement.duration) return;
   audioElement.currentTime = (seekBar.value/100)*audioElement.duration;
 };
-volumeControl.oninput = () => {
-  if (!audioElement) return;
-  audioElement.volume = volumeControl.value;
+
+// Attach global event listeners once
+audioElement.ontimeupdate = () => {
+    if (audioElement && audioElement.duration) {
+        seekBar.value = (audioElement.currentTime / audioElement.duration) * 100;
+    }
 };
+volumeControl.oninput = () => {
+    if (audioElement) {
+        audioElement.volume = volumeControl.value;
+    }
+};
+audioElement.volume = volumeControl.value;
 
 // --- Image Viewer Logic ---
 const photoAlbum = [
-  { src: './pics/photography/delgap.jpg', caption: 'South West NJ Coast, Del Water Gap' },
+  { src: './pics/photography/delgap.jpg', caption: 'South West NJ Coast, Del Water Gap'},
   { src: './pics/photography/morntide.jpg', caption: 'Newport Jersey City Walkway' },
   { src: './pics/photography/moonset.jpg', caption: 'Hoboken Fire Escape' },
   { src: './pics/photography/nycsuns.jpg', caption: 'Midtown Sunset' },
@@ -1097,7 +1093,7 @@ function populateExplorer() {
 // Initialize apps
 // window.addEventListener('resize', layoutIcons);
 populatePlaylist();
-initImageViewer();
+initImageViewer(); // Ensure controls are disabled on page load
 
 // --- Boot/Loading Screen Logic ---
 // For development: Immediately show the desktop and skip the loading screen.
