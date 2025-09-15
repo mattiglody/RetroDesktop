@@ -17,7 +17,7 @@ let activeWindowId = null;
 
 // --- Path Configuration ---
 const isGithubPages = window.location.hostname.includes('github.io');
-const basePath = isGithubPages ? 'RetroDesktop/' : '';
+const basePath = isGithubPages ? '/RetroDesktop/' : '';
 
 /**
  * Starts the drag operation for a desktop icon.
@@ -624,15 +624,17 @@ function stopResize() {
 }
 
 // Media Player Logic
-let audioCtx, analyser, sourceNode, bufferLength, dataArray, animationId, audioElement;
+let audioCtx, analyser, sourceNode, bufferLength, dataArray, animationId;
 
 const fileInput = document.getElementById('audioFile');
 const playlistDropdown = document.getElementById('playlistDropdown');
 const browseAudioBtn = document.getElementById('browseAudioBtn');
 
+const audioElement = document.getElementById('media-player-audio');
+
 // --- Playlist Configuration ---
 const playlist = [
-    { name: "Zwan_Love_Lies_in_Ruin_acoustic_2003.mp3", path: 'C:/Users/Matthew/Documents/GitHub/RetroDesktop/media/Zwan_Love_Lies_in_Ruin_acoustic_2003.mp3' },
+    { name: "zwan_love_lies_in_ruin_acoustic_2003.mp3", path: 'media/zwan_love_lies_in_ruin_acoustic_2003.mp3' },
     { name: "Praise_You_Fatboy_Slim.mp3", path: 'media/Praise_You_Fatboy_Slim.mp3' },
     { name: "Jethro_Tull_Teacher.mp3", path: 'media/Jethro_Tull_Teacher.mp3' },
     // Add more songs here
@@ -654,50 +656,66 @@ const volumeControl = document.getElementById('volumeControl');
 const visualizerSelect = document.getElementById('visualizerSelect');
 const nowPlaying = document.getElementById('nowPlaying');
 
-function loadSong(song) {
-    // The 'song' object can have a 'path' (from playlist) or 'url' (from file upload)
-    if (audioElement) {
-        audioElement.pause();
-        cancelAnimationFrame(animationId);
-    }
-
-    const audioSrc = song.url ? song.url : basePath + song.path;
-    audioElement = new Audio(audioSrc);
-    audioElement.crossOrigin = "anonymous";
-
-    // When loading a new song, reset the dropdown unless it's from the playlist
-    if (song.url) {
-        playlistDropdown.value = "";
-    }
-
+function setupAudioContext() {
     if (!audioCtx) {
         audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         analyser = audioCtx.createAnalyser();
+        sourceNode = audioCtx.createMediaElementSource(audioElement);
+        
+        sourceNode.connect(analyser);
         analyser.connect(audioCtx.destination);
         analyser.fftSize = 256;
+
+        bufferLength = analyser.frequencyBinCount;
+        dataArray = new Uint8Array(bufferLength);
+    }
+}
+
+function loadSong(song) {
+    // The 'song' object can have a 'path' (from playlist) or 'url' (from file upload)
+    if (audioElement.src) {
+        audioElement.pause();
+        cancelAnimationFrame(animationId);
+        animationId = null;
     }
 
-    sourceNode = audioCtx.createMediaElementSource(audioElement);
-    sourceNode.connect(analyser);
+    // This is the definitive fix: Construct a full, absolute URL.
+    // This prevents any ambiguity for the browser when loading the source.
+    const audioSrc = song.url ? song.url : `${window.location.origin}${basePath}${song.path}`;
 
-    bufferLength = analyser.frequencyBinCount;
-    dataArray = new Uint8Array(bufferLength);
+    audioElement.src = audioSrc;
 
-    // Resize canvas to fit its container
-    canvas.width = canvas.clientWidth;
-    canvas.height = canvas.clientHeight;
+    // When loading a new song from a file, reset the dropdown
+    if (song.url) {
+        playlistDropdown.value = "";
+    }
 
     nowPlaying.textContent = song.name;
     nowPlaying.style.display = 'block';
 
     enableControls();
 
-    // Update seek bar
     audioElement.ontimeupdate = () => {
-        if (audioElement.duration) {
+        if (audioElement && audioElement.duration) {
             seekBar.value = (audioElement.currentTime / audioElement.duration) * 100;
         }
     };
+
+    // The most robust fix: Wait for the browser to confirm it can play the media.
+    const playWhenReady = () => {
+        // This event listener should only run once per song load.
+        audioElement.removeEventListener('canplaythrough', playWhenReady);
+
+        audioElement.play().then(() => {
+            // Setup audio context if it's the very first play
+            setupAudioContext();
+            visualize();
+        }).catch(err => {
+            console.error("Error auto-playing song:", err);
+        });
+    };
+
+    audioElement.addEventListener('canplaythrough', playWhenReady);
 }
 
 playlistDropdown.addEventListener('change', e => {
@@ -803,25 +821,33 @@ function visualize() {
 }
 
 playBtn.onclick = async () => {
-    if (!audioElement) return; // Do nothing if no song is loaded
+    // If there's no song loaded, do nothing.
+    if (!audioElement.src) return;
 
-    try {
-        // Resume context if it's suspended, which is required by modern browsers
-        if (audioCtx && audioCtx.state === 'suspended') {
-            await audioCtx.resume();
+    // Toggle play/pause
+    if (audioElement.paused) {
+        try {
+            // Resume audio context if needed
+            if (audioCtx && audioCtx.state === 'suspended') {
+                await audioCtx.resume();
+            }
+            await audioElement.play();
+            visualize(); // Restart visualization if it was stopped
+        } catch (err) {
+            console.error("Error resuming audio:", err);
         }
-        await audioElement.play();
-        visualize();
-    } catch (err) {
-        console.error("Error playing audio:", err);
+    } else {
+        audioElement.pause();
+        cancelAnimationFrame(animationId); // Stop visualization
     }
 };
 pauseBtn.onclick = () => {
+  if (!audioElement) return;
   audioElement.pause();
   cancelAnimationFrame(animationId);
 };
 stopBtn.onclick = () => {
-  if (!audioElement) return;
+  if (!audioElement || !audioElement.src) return;
   audioElement.pause();
   audioElement.currentTime = 0;
   cancelAnimationFrame(animationId);
@@ -832,9 +858,11 @@ stopBtn.onclick = () => {
   nowPlaying.style.display = 'none';
 };
 seekBar.oninput = () => {
+  if (!audioElement || !audioElement.src || !audioElement.duration) return;
   audioElement.currentTime = (seekBar.value/100)*audioElement.duration;
 };
 volumeControl.oninput = () => {
+  if (!audioElement) return;
   audioElement.volume = volumeControl.value;
 };
 
