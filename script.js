@@ -17,7 +17,7 @@ let activeWindowId = null;
 
 // --- Path Configuration ---
 const isGithubPages = window.location.hostname.includes('github.io');
-const basePath = isGithubPages ? '/RetroDesktop/' : '';
+const basePath = isGithubPages ? '/retrodesktop/' : '';
 
 /**
  * Starts the drag operation for a desktop icon.
