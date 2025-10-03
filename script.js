@@ -864,7 +864,7 @@ audioElement.volume = volumeControl.value;
 
 // --- Image Viewer Logic ---
 const photoAlbum = [
-  { src: './pics/photography/delgap.jpg', caption: 'South West NJ Coast, Del Water Gap'},
+  { src: './pics/photography/delgap.JPG', caption: 'South West NJ Coast, Del Water Gap'},
   { src: './pics/photography/morntide.jpg', caption: 'Newport Jersey City Walkway' },
   { src: './pics/photography/moonset.jpg', caption: 'Hoboken Fire Escape' },
   { src: './pics/photography/nycsuns.jpg', caption: 'Midtown Sunset' },
