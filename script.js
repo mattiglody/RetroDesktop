@@ -869,7 +869,7 @@ const photoAlbum = [
   { src: './pics/photography/moonset.jpg', caption: 'Hoboken Fire Escape' },
   { src: './pics/photography/nycsuns.jpg', caption: 'Midtown Sunset' },
   { src: './pics/photography/sherbsky.jpg', caption: 'Hoboken Fire Escape' },
-  { src: './pics/photography/wintrrd.jpg', caption: 'Adirondack Northway in Winter' }
+  { src: './pics/photography/wintrrd.jpg', caption: 'Adirondack Northway  in Winter' }
 ];
 let currentPhotoIndex = 0;
 
