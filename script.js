@@ -674,9 +674,7 @@ function loadSong(song, options = {}) {
     }
 
     return;
-  }
-
-  if (isCustom) {
+  }\r\n\r\n  let resolvedIndex = null;\r\n\r\n  if (isCustom {
     if (customSongUrl && customSongUrl !== song.path) {
       URL.revokeObjectURL(customSongUrl);
     }
@@ -684,21 +682,13 @@ function loadSong(song, options = {}) {
     if (playlistDropdown) {
       playlistDropdown.value = '';
     }
-  } else {
-    if (customSongUrl) {
-      URL.revokeObjectURL(customSongUrl);
-      customSongUrl = null;
-    }
-    if (playlistDropdown && typeof index === 'number' && !Number.isNaN(index)) {
-      playlistDropdown.value = String(index);
-    }
-  }
+  } else {\r\n    if (customSongUrl) {\r\n      URL.revokeObjectURL(customSongUrl);\r\n      customSongUrl = null;\r\n    }\r\n\r\n    const providedIndex = typeof index === 'number' && !Number.isNaN(index) ? index : null;\r\n    if (providedIndex !== null && providedIndex >= 0 && providedIndex < playlist.length) {\r\n      resolvedIndex = providedIndex;\r\n    } else {\r\n      const matchIndex = playlist.findIndex(entry => entry.path === song.path);\r\n      resolvedIndex = matchIndex >= 0 ? matchIndex : null;\r\n    }\r\n\r\n    if (playlistDropdown && resolvedIndex !== null) {\r\n      playlistDropdown.value = String(resolvedIndex);\r\n    }\r\n  }
 
   audioElement.src = song.path; // ✅ no new URL trickery
   nowPlaying.textContent = song.name;
   nowPlaying.style.display = 'block';
 
-  currentSongIndex = typeof index === 'number' && !Number.isNaN(index) ? index : null;
+  currentSongIndex = !isCustom && resolvedIndex !== null ? resolvedIndex : null;
   isCustomTrack = isCustom;
 
   setPlaybackControlsEnabled(true);
@@ -1177,4 +1167,7 @@ volumeControl.oninput = () => {
 };
 
 audioElement.volume = volumeControl.value;
+
+
+
 
