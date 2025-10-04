@@ -609,19 +609,19 @@ function resetSeekBar() {
 // --- Playlist Configuration (✅ FIXED PATHS) ---
 const playlist = [
   {
-    name: 'Love Lies in Ruin (Acoustic) – Zwan',
-    path: resolveMediaPath('Zwan_Love_Lies_in_Ruin_acoustic_2003.mp3')
+    name: 'Love Lies in Ruin (Acoustic) - Zwan',
+    path: resolveMediaPath('zwan_love_lies_in_ruin_acoustic.mp3')
   },
   {
-    name: 'Praise You – Fatboy Slim',
-    path: resolveMediaPath('Praise_You_Fatboy_Slim.mp3')
+    name: 'Praise You - Fatboy Slim',
+    path: resolveMediaPath('praise_you_fatboy_slim.mp3')
   },
   {
-    name: 'Are You Man Enough – The Four Tops',
+    name: 'Are You Man Enough - The Four Tops',
     path: resolveMediaPath('the_four_tops_are_you_man_enough.mp3')
   },
   {
-    name: 'Teacher – Jethro Tull',
+    name: 'Teacher - Jethro Tull',
     path: resolveMediaPath('jethro_tull_teacher.mp3')
   }
 ];
@@ -750,20 +750,7 @@ if (playlistDropdown) {
     }
   });
 }
-if (prevBtn) {
-  prevBtn.addEventListener('click', () => {
-    const shouldAutoplay = !audioElement.paused;
-    playRelativeSong(-1, shouldAutoplay);
-  });
-}
-
-if (nextBtn) {
-  nextBtn.addEventListener('click', () => {
-    const shouldAutoplay = !audioElement.paused;
-    playRelativeSong(1, shouldAutoplay);
-  });
-}
-
+if (prevBtn) {\r\n  prevBtn.addEventListener('click', () => {\r\n    playRelativeSong(-1, true);\r\n  });\r\n}\r\n\r\nif (nextBtn) {\r\n  nextBtn.addEventListener('click', () => {\r\n    playRelativeSong(1, true);\r\n  });\r\n}\r\n
 if (browseAudioBtn) {
   browseAudioBtn.addEventListener('click', () => {
     if (fileInput) {
@@ -1191,16 +1178,5 @@ volumeControl.oninput = () => {
 };
 
 audioElement.volume = volumeControl.value;
-
-
-
-
-
-
-
-
-
-
-
 
 
