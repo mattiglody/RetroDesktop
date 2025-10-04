@@ -19,6 +19,10 @@ let activeWindowId = null;
 const isGithubPages = window.location.hostname.includes('github.io');
 const basePath = isGithubPages ? '/retrodesktop/' : '';
 
+function resolveMediaPath(fileName) {
+  return `${basePath}media/${fileName}`;
+}
+
 /**
  * Starts the drag operation for a desktop icon.
  */
@@ -548,15 +552,33 @@ function resetSeekBar() {
 
 // --- Playlist Configuration (✅ FIXED PATHS) ---
 const playlist = [
-  { name: "zwan_love_lies_in_ruin_acoustic_2003.mp3", path: "media/zwan_love_lies_in_ruin_acoustic_2003.mp3" },
-  { name: "praise_you_fatboy_slim.mp3", path: "media/praise_you_fatboy_slim.mp3" },
-  { name: "jethro_tull_teacher.mp3", path: "media/jethro_tull_teacher.mp3" }
+  {
+    name: 'Love Lies in Ruin (Acoustic) – Zwan',
+    path: resolveMediaPath('Zwan_Love_Lies_in_Ruin_acoustic_2003.mp3')
+  },
+  {
+    name: 'Praise You – Fatboy Slim',
+    path: resolveMediaPath('Praise_You_Fatboy_Slim.mp3')
+  },
+  {
+    name: 'Are You Man Enough – The Four Tops',
+    path: resolveMediaPath('the_four_tops_are_you_man_enough.mp3')
+  },
+  {
+    name: 'Teacher – Jethro Tull',
+    path: resolveMediaPath('jethro_tull_teacher.mp3')
+  }
 ];
 
 function populatePlaylist() {
-  playlist.forEach((song, index) => {
-    playlistDropdown.innerHTML += `<option value="${index}">${song.name}</option>`;
-  });
+  if (!playlistDropdown) return;
+
+  const defaultOption = "<option value=\"\">Select a song...</option>";
+  const options = playlist
+    .map((song, index) => "<option value=\"" + index + "\">" + song.name + "</option>")
+    .join("");
+
+  playlistDropdown.innerHTML = defaultOption + options;
 }
 
 // --- Load Song (✅ FIXED LOGIC) ---
