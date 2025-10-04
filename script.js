@@ -864,7 +864,7 @@ audioElement.volume = volumeControl.value;
 
 // --- Image Viewer Logic ---
 const photoAlbum = [
-  { src: "pics/photography/jettysea.jpeg", caption: "Barnegat Inlet Jetty, NJ" },
+  { src: "./pics/photography/jettysea.jpeg", caption: "Barnegat Inlet Jetty, NJ" },
   { src: "pics/photography/morntide.jpg", caption: "Newport Jersey City Walkway" },
   { src: "pics/photography/moonset.jpg", caption: "Hoboken Fire Escape" },
   { src: "pics/photography/nycsuns.jpg", caption: "Midtown Sunset" },
