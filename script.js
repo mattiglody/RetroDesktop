@@ -674,7 +674,11 @@ function loadSong(song, options = {}) {
     }
 
     return;
-  }\r\n\r\n  let resolvedIndex = null;\r\n\r\n  if (isCustom {
+  }
+
+  let resolvedIndex = null;
+
+  if (isCustom) {
     if (customSongUrl && customSongUrl !== song.path) {
       URL.revokeObjectURL(customSongUrl);
     }
@@ -682,9 +686,26 @@ function loadSong(song, options = {}) {
     if (playlistDropdown) {
       playlistDropdown.value = '';
     }
-  } else {\r\n    if (customSongUrl) {\r\n      URL.revokeObjectURL(customSongUrl);\r\n      customSongUrl = null;\r\n    }\r\n\r\n    const providedIndex = typeof index === 'number' && !Number.isNaN(index) ? index : null;\r\n    if (providedIndex !== null && providedIndex >= 0 && providedIndex < playlist.length) {\r\n      resolvedIndex = providedIndex;\r\n    } else {\r\n      const matchIndex = playlist.findIndex(entry => entry.path === song.path);\r\n      resolvedIndex = matchIndex >= 0 ? matchIndex : null;\r\n    }\r\n\r\n    if (playlistDropdown && resolvedIndex !== null) {\r\n      playlistDropdown.value = String(resolvedIndex);\r\n    }\r\n  }
+  } else {
+    if (customSongUrl) {
+      URL.revokeObjectURL(customSongUrl);
+      customSongUrl = null;
+    }
 
-  audioElement.src = song.path; // ✅ no new URL trickery
+    const providedIndex = typeof index === 'number' && !Number.isNaN(index) ? index : null;
+    if (providedIndex !== null && providedIndex >= 0 && providedIndex < playlist.length) {
+      resolvedIndex = providedIndex;
+    } else {
+      const matchIndex = playlist.findIndex(entry => entry.path === song.path);
+      resolvedIndex = matchIndex >= 0 ? matchIndex : null;
+    }
+
+    if (playlistDropdown && resolvedIndex !== null) {
+      playlistDropdown.value = String(resolvedIndex);
+    }
+  }
+
+  audioElement.src = song.path; // ?o. no new URL trickery
   nowPlaying.textContent = song.name;
   nowPlaying.style.display = 'block';
 
@@ -692,7 +713,7 @@ function loadSong(song, options = {}) {
   isCustomTrack = isCustom;
 
   setPlaybackControlsEnabled(true);
-  setPlaylistNavigationEnabled(!isCustom && playlist.length > 1);
+  setPlaylistNavigationEnabled(!isCustom && playlist.length > 1 && currentSongIndex !== null);
   resetSeekBar();
 
   if (audioCtx && sourceNode) {
@@ -705,6 +726,7 @@ function loadSong(song, options = {}) {
     playAudio();
   }
 }
+
 function playRelativeSong(step, autoplay = false) {
   if (!playlist.length || isCustomTrack) return;
 
@@ -723,7 +745,9 @@ if (playlistDropdown) {
     }
 
     const index = Number(value);
-    if (!Number.isNaN(index)) {\n      loadSong(playlist[index], { index, autoplay: true });\n    }
+    if (!Number.isNaN(index)) {
+      loadSong(playlist[index], { index, autoplay: true });
+    }
   });
 }
 if (prevBtn) {
@@ -1167,6 +1191,15 @@ volumeControl.oninput = () => {
 };
 
 audioElement.volume = volumeControl.value;
+
+
+
+
+
+
+
+
+
 
 
 
