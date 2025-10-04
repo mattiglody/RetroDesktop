@@ -733,9 +733,7 @@ if (playlistDropdown) {
     }
 
     const index = Number(value);
-    if (!Number.isNaN(index)) {
-      loadSong(playlist[index], { index });
-    }
+    if (!Number.isNaN(index)) {\n      loadSong(playlist[index], { index, autoplay: true });\n    }
   });
 }
 if (prevBtn) {
@@ -1179,3 +1177,4 @@ volumeControl.oninput = () => {
 };
 
 audioElement.volume = volumeControl.value;
+
