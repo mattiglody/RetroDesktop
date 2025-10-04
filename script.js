@@ -14,10 +14,13 @@ let minWidth, minHeight;
 const taskbarTabsContainer = document.getElementById('taskbar-tabs');
 const desktopContainer = document.getElementById('main-desktop');
 let activeWindowId = null;
+const maximizedWindows = new Map();
 
 // --- Path Configuration ---
 const isGithubPages = window.location.hostname.includes('github.io');
-const basePath = isGithubPages ? '/retrodesktop/' : '';
+const pathSegments = window.location.pathname.split('/').filter(Boolean);
+const repoBasePath = pathSegments.length ? '/' + pathSegments[0] + '/' : '/';
+const basePath = isGithubPages ? repoBasePath : '';
 
 function resolveMediaPath(fileName) {
   return `${basePath}media/${fileName}`;
@@ -329,6 +332,7 @@ function focusWindow(id, isFromTaskbar = false) {
 function closeWindow(id) {
   const win = document.getElementById(id);
   if (!win) return;
+  restoreMaximizedWindow(win, id);
   win.style.display = 'none';
   const tab = taskbarTabsContainer.querySelector(`[data-window-id="${id}"]`);
   if (tab) tab.remove();
@@ -349,6 +353,58 @@ function minimizeWindow(id) {
   if (tab) tab.classList.remove('active');
   if (activeWindowId === id) activeWindowId = null;
 }
+
+function restoreMaximizedWindow(win, id) {
+  if (!win) return;
+
+  const state = maximizedWindows.get(id);
+  if (win.classList.contains('maximized')) {
+    win.classList.remove('maximized');
+  }
+
+  if (state) {
+    win.style.left = state.left;
+    win.style.top = state.top;
+    win.style.width = state.width;
+    win.style.height = state.height;
+    maximizedWindows.delete(id);
+  }
+}
+
+function maximizeWindow(id) {
+  const win = document.getElementById(id);
+  if (!win) return;
+
+  if (win.classList.contains('maximized')) {
+    restoreMaximizedWindow(win, id);
+    focusWindow(id);
+    return;
+  }
+
+  const computed = window.getComputedStyle(win);
+  const rect = win.getBoundingClientRect();
+
+  const storedState = {
+    left: win.style.left || (computed.left !== 'auto' ? computed.left : `${rect.left}px`),
+    top: win.style.top || (computed.top !== 'auto' ? computed.top : `${rect.top}px`),
+    width: win.style.width || (computed.width !== 'auto' ? computed.width : `${rect.width}px`),
+    height: win.style.height || (computed.height !== 'auto' ? computed.height : `${rect.height}px`)
+  };
+
+  maximizedWindows.set(id, storedState);
+
+  const taskbar = document.getElementById('taskbar');
+  const taskbarHeight = taskbar ? taskbar.offsetHeight : 0;
+
+  win.classList.add('maximized');
+  win.style.left = '0px';
+  win.style.top = '0px';
+  win.style.width = '100vw';
+  win.style.height = `calc(100vh - ${taskbarHeight}px)`;
+
+  focusWindow(id);
+}
+
 
 // Clock
 function updateClock() {
