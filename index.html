@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Retro Desktop Portolio</title>
+  <title>Retro Desktop Portfolio</title>
   <link rel="icon" href="pics/icons/winlogo.png" type="image/png" />
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <!-- <div id="loading-screen">
@@ -15,261 +15,265 @@
     </div>
   </div> -->
 
-  <!-- The main desktop area now holds both icons and windows in the same space -->
+  <!-- Desktop -->
   <div id="main-desktop" class="hidden">
-      <div class="desktop-icon" data-window-id="aboutWindow">
-        <img src="pics/icons/systhdd.png" /><br />
-        About Me
-      </div>
-      <div class="desktop-icon" data-window-id="projectsWindow">
-        <img src="pics/icons/fileexplore.png" /><br />
-        My Projects
-      </div>
-      <div class="desktop-icon" data-window-id="contactWindow">
-        <img src="pics/icons/contact.png" /><br />
-        Contact
-      </div>
-      <div class="desktop-icon" data-window-id="mediaPlayer">
-        <img src="pics/icons/wmp.png" /><br />
-        Media Player
-      </div>
-      <div class="desktop-icon" data-window-id="imageViewerWindow">
-        <img src="pics/icons/photos.png" /><br />
-        My Photos
-      </div>
-      <div class="desktop-icon" data-window-id="notepadWindow">
-        <img src="pics/icons/textedit.png" /><br />
-        Notepad
-      </div>
-      
-      <!-- Portfolio Windows -->
-      <div class="window" id="projectsWindow">
-    <div class="title-bar">
-      <span>My Projects</span>
-      <div>
-        <button class="win-btn minimize-btn" title="Minimize">_</button>
-        <button class="win-btn maximize-btn" title="Maximize"></button>
-        <button class="win-btn close-btn" title="Close">X</button>
-      </div>
+    <div class="desktop-icon" data-window-id="aboutWindow">
+      <img src="pics/icons/systhdd.png" /><br />
+      About Me
     </div>
-    <div class="content">
-      <p>Here are some of my projects:</p>
-      <ul>
-        <li><a href="https://fastmri.med.nyu.edu/" target="_blank" rel="noopener noreferrer">NYU fastMRI Project</a></li>
-        <li><a href="https://radiologyresidentcorelectures.com/" target="_blank" rel="noopener noreferrer">AUR Radiology Resident First Year Lectures</a></li>
-        <li>Project 3: Description...</li>
-        <li><a href="https://eppicnet.org/novaremed/" target="_blank" rel="noopener noreferrer">Clinical Trial Engagement Site</a></li>
-        <li><a href="https://sensoryspeaking.org/" target="_blank" rel="noopener noreferrer">Sensory Speaking Website</a> | July 2025</li>
-      </ul>
+    <div class="desktop-icon" data-window-id="projectsWindow">
+      <img src="pics/icons/fileexplore.png" /><br />
+      My Projects
     </div>
-    <div class="resize-handle"></div>
-  </div>
-  <div class="window" id="aboutWindow" style="height: 250px;">
-    <div class="title-bar">
-      <span>About Me</span>
-      <div>
-        <button class="win-btn minimize-btn" title="Minimize">_</button>
-        <button class="win-btn maximize-btn" title="Maximize"></button>
-        <button class="win-btn close-btn" title="Close">X</button>
-      </div>
+    <div class="desktop-icon" data-window-id="contactWindow">
+      <img src="pics/icons/contact.png" /><br />
+      Contact
     </div>
-    <div class="content">
-      <p>Welcome to my professional digital footprint. I'm glad you could take the time to stop by and check it out.</p>
-      <p>My name is Matthew Iglody. I am a mid-career professional who has been working in IT since College. The summer after my freshman year, I began interning at Stryker Orthopaedics. I did this for two summers and then worked at school year-round in the construction office.</p>
-      <p>After graduating college, I got my first job working in hospital IT near the town I grew up in. I was given more responsibility and the team I worked with was great. I was traveling between sites much more after two years and not too long after, got the opportunity to work at NYU Langone Medical Center for the Radiology Department as an IT Analyst.</p>
-      <p>I was promoted to senior analyst after working roughly two years. Just one year later, COVID-19 hit NYC. Over the next two years, we worked to maintain and update our colleagues' telepresence. Around spring of 2022, NYC felt like it was getting its traffic back. There were more people coming back onsite and policies were changing.</p>
-      <p>In December of 2022, I got the opportunity to make the switch into Research IT and Clinical trials. I was there for another two years.</p>
+    <div class="desktop-icon" data-window-id="mediaPlayer">
+      <img src="pics/icons/wmp.png" /><br />
+      Media Player
     </div>
-    <div class="resize-handle"></div>
-  </div>
+    <div class="desktop-icon" data-window-id="imageViewerWindow">
+      <img src="pics/icons/photos.png" /><br />
+      My Photos
+    </div>
+    <div class="desktop-icon" data-window-id="notepadWindow">
+      <img src="pics/icons/textedit.png" /><br />
+      Notepad
+    </div>
 
-  <!-- Media Player Window -->
-  <div class="window" id="mediaPlayer">
-    <div class="title-bar">
-      <span>Media Player</span>
-      <div>
-        <button class="win-btn minimize-btn" title="Minimize">_</button>
-        <button class="win-btn maximize-btn" title="Maximize"></button>
-        <button class="win-btn close-btn" title="Close">X</button>
-      </div>
-    </div>
-    <div class="content" id="mediaPlayerContent">
-      <div class="visualizer-container">
-        <canvas id="visualizer"></canvas>
-        <div id="nowPlaying"></div>
-      </div>
-      <div class="media-footer">
-        <div class="media-progress">
-          <input type="range" id="seekBar" value="0" min="0" max="100" step="1" disabled />
-        </div>
-        <div class="media-controls">
-          <div class="playback-buttons">
-            <button id="prevBtn" disabled>⏮</button>
-            <button id="playBtn" disabled>▶</button>
-            <button id="pauseBtn" disabled>⏸</button>
-            <button id="stopBtn" disabled>⏹</button>
-            <button id="nextBtn" disabled>⏭</button>
-          </div>
-          <div class="file-and-volume">
-            <input type="file" id="audioFile" accept="audio/*" style="display:none;" />
-            <button id="browseAudioBtn" class="win-button">Browse...</button>
-            <select id="playlistDropdown" class="win-button">
-              <option value="">Select a song...</option>
-            </select>
-            <select id="visualizerSelect" class="win-button">
-              <option value="bars">Frequency Bars</option>
-              <option value="waveform">Waveform</option>
-              <option value="circle">Circular Bars</option>
-            </select>
-            <input type="range" id="volumeControl" min="0" max="1" step="0.01" value="1" />
-          </div>
+    <!-- Projects Window -->
+    <div class="window" id="projectsWindow">
+      <div class="title-bar">
+        <span>My Projects</span>
+        <div>
+          <button class="win-btn minimize-btn" title="Minimize">_</button>
+          <button class="win-btn maximize-btn" title="Maximize"></button>
+          <button class="win-btn close-btn" title="Close">X</button>
         </div>
       </div>
+      <div class="content">
+        <p>Here are some of my projects:</p>
+        <ul>
+          <li><a href="https://fastmri.med.nyu.edu/" target="_blank" rel="noopener noreferrer">NYU fastMRI Project</a></li>
+          <li><a href="https://radiologyresidentcorelectures.com/" target="_blank" rel="noopener noreferrer">AUR Radiology Resident First Year Lectures</a></li>
+          <li>Project 3: Description...</li>
+          <li><a href="https://eppicnet.org/novaremed/" target="_blank" rel="noopener noreferrer">Clinical Trial Engagement Site</a></li>
+          <li><a href="https://sensoryspeaking.org/" target="_blank" rel="noopener noreferrer">Sensory Speaking Website</a> | July 2025</li>
+        </ul>
+      </div>
+      <div class="resize-handle"></div>
     </div>
-    <div class="resize-handle"></div>
-  </div>
 
-  <div class="window" id="contactWindow" style="width: 450px;">
-    <div class="title-bar">
-      <span>Contact</span>
-      <div>
-        <button class="win-btn minimize-btn" title="Minimize">_</button>
-        <button class="win-btn maximize-btn" title="Maximize"></button>
-        <button class="win-btn close-btn" title="Close">X</button>
+    <!-- About Window -->
+    <div class="window" id="aboutWindow" style="height: 250px;">
+      <div class="title-bar">
+        <span>About Me</span>
+        <div>
+          <button class="win-btn minimize-btn" title="Minimize">_</button>
+          <button class="win-btn maximize-btn" title="Maximize"></button>
+          <button class="win-btn close-btn" title="Close">X</button>
+        </div>
       </div>
+      <div class="content">
+        <p>Welcome to my professional digital footprint. I'm glad you could take the time to stop by and check it out.</p>
+        <p>My name is Matthew Iglody. I am a mid-career professional who has been working in IT since College. The summer after my freshman year, I began interning at Stryker Orthopaedics. I did this for two summers and then worked at school year-round in the construction office.</p>
+        <p>After graduating college, I got my first job working in hospital IT near the town I grew up in. I was given more responsibility and the team I worked with was great. I was traveling between sites much more after two years and not too long after, got the opportunity to work at NYU Langone Medical Center for the Radiology Department as an IT Analyst.</p>
+        <p>I was promoted to senior analyst after working roughly two years. Just one year later, COVID-19 hit NYC. Over the next two years, we worked to maintain and update our colleagues' telepresence. Around spring of 2022, NYC felt like it was getting its traffic back. There were more people coming back onsite and policies were changing.</p>
+        <p>In December of 2022, I got the opportunity to make the switch into Research IT and Clinical trials. I was there for another two years.</p>
+      </div>
+      <div class="resize-handle"></div>
     </div>
-    <div class="content">
-      <p>You can reach me here:</p>
-      <ul>
-        <li>Email: <a href="mailto:mattiglody@gmail.com">mattiglody@gmail.com</a></li>
-        <li>LinkedIn: <a href="https://www.linkedin.com/in/matthew-iglody/" target="_blank" rel="noopener noreferrer">https://www.linkedin.com/in/matthew-iglody/</a></li>
-        <li>GitHub: <a href="https://github.com/mattiglody" target="_blank" rel="noopener noreferrer">https://github.com/mattiglody</a></li>
-        <li>Resume: <a href="docs/Matthew_E_Iglody_2025.pdf" target="_blank" rel="noopener noreferrer">View PDF</a></li>
-      </ul>
-    </div>
-    <div class="resize-handle"></div>
-  </div>
 
-  <!-- Image Viewer Window -->
-  <div class="window" id="imageViewerWindow">
-    <div class="title-bar">
-      <span>Image Viewer</span>
-      <div>
-        <button class="win-btn minimize-btn" title="Minimize">_</button>
-        <button class="win-btn maximize-btn" title="Maximize"></button>
-        <button class="win-btn close-btn" title="Close">X</button>
+    <!-- Media Player Window -->
+    <div class="window" id="mediaPlayer">
+      <div class="title-bar">
+        <span>Media Player</span>
+        <div>
+          <button class="win-btn minimize-btn" title="Minimize">_</button>
+          <button class="win-btn maximize-btn" title="Maximize"></button>
+          <button class="win-btn close-btn" title="Close">X</button>
+        </div>
       </div>
+      <div class="content" id="mediaPlayerContent">
+        <div class="visualizer-container">
+          <canvas id="visualizer"></canvas>
+          <div id="nowPlaying"></div>
+        </div>
+        <div class="media-footer">
+          <div class="media-progress">
+            <input type="range" id="seekBar" value="0" min="0" max="100" step="1" disabled />
+          </div>
+          <div class="media-controls">
+            <div class="playback-buttons">
+              <button id="prevBtn" disabled>⏮</button>
+              <button id="playBtn" disabled>▶</button>
+              <button id="pauseBtn" disabled>⏸</button>
+              <button id="stopBtn" disabled>⏹</button>
+              <button id="nextBtn" disabled>⏭</button>
+            </div>
+            <div class="file-and-volume">
+              <input type="file" id="audioFile" accept="audio/*" style="display:none;" />
+              <button id="browseAudioBtn" class="win-button">Browse...</button>
+              <select id="playlistDropdown" class="win-button">
+                <option value="">Select a song...</option>
+              </select>
+              <select id="visualizerSelect" class="win-button">
+                <option value="bars">Frequency Bars</option>
+                <option value="waveform">Waveform</option>
+                <option value="circle">Circular Bars</option>
+              </select>
+              <input type="range" id="volumeControl" min="0" max="1" step="0.01" value="1" />
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="resize-handle"></div>
     </div>
-    <div class="content" id="imageViewerContent">
-      <div class="image-display-area">
-        <img id="mainImage" src="" alt="Main view" />
-      </div>
-      <div class="image-controls">
-        <button id="prevImageBtn" class="win-button">&lt; Prev</button>
-        <span id="imageCaption"></span>
-        <button id="nextImageBtn" class="win-button">Next &gt;</button>
-      </div>
-      <div class="thumbnail-bar"></div>
-    </div>
-    <div class="resize-handle"></div>
-  </div>
 
-  <!-- Display Properties Window (for context menu) -->
-  <div class="window" id="displayPropertiesWindow">
-    <div class="title-bar">
-      <span>Display Properties</span>
-      <div>
-        <button class="win-btn minimize-btn" title="Minimize">_</button>
-        <button class="win-btn maximize-btn" title="Maximize"></button>
-        <button class="win-btn close-btn" title="Close">X</button>
+    <!-- Contact Window -->
+    <div class="window" id="contactWindow" style="width: 450px;">
+      <div class="title-bar">
+        <span>Contact</span>
+        <div>
+          <button class="win-btn minimize-btn" title="Minimize">_</button>
+          <button class="win-btn maximize-btn" title="Maximize"></button>
+          <button class="win-btn close-btn" title="Close">X</button>
+        </div>
       </div>
+      <div class="content">
+        <p>You can reach me here:</p>
+        <ul>
+          <li>Email: <a href="mailto:mattiglody@gmail.com">mattiglody@gmail.com</a></li>
+          <li>LinkedIn: <a href="https://www.linkedin.com/in/matthew-iglody/" target="_blank" rel="noopener noreferrer">https://www.linkedin.com/in/matthew-iglody/</a></li>
+          <li>GitHub: <a href="https://github.com/mattiglody" target="_blank" rel="noopener noreferrer">https://github.com/mattiglody</a></li>
+          <li>Resume: <a href="docs/Matthew_E_Iglody_2025.pdf" target="_blank" rel="noopener noreferrer">View PDF</a></li>
+        </ul>
+      </div>
+      <div class="resize-handle"></div>
     </div>
-    <div class="content">
-      <p>Background: Teal</p>
-    </div>
-    <div class="resize-handle"></div>
-  </div>
 
-  <!-- Notepad Window -->
-  <div class="window" id="notepadWindow">
-    <div class="title-bar">
-      <span>Untitled - Notepad</span>
-      <div>
-        <button class="win-btn minimize-btn" title="Minimize">_</button>
-        <button class="win-btn maximize-btn" title="Maximize"></button>
-        <button class="win-btn close-btn" title="Close">X</button>
+    <!-- Image Viewer Window -->
+    <div class="window" id="imageViewerWindow">
+      <div class="title-bar">
+        <span>Image Viewer</span>
+        <div>
+          <button class="win-btn minimize-btn" title="Minimize">_</button>
+          <button class="win-btn maximize-btn" title="Maximize"></button>
+          <button class="win-btn close-btn" title="Close">X</button>
+        </div>
       </div>
+      <div class="content" id="imageViewerContent">
+        <div class="image-display-area">
+          <img id="mainImage" src="" alt="Main view" />
+        </div>
+        <div class="image-controls">
+          <button id="prevImageBtn" class="win-button">&lt; Prev</button>
+          <span id="imageCaption"></span>
+          <button id="nextImageBtn" class="win-button">Next &gt;</button>
+        </div>
+        <div class="thumbnail-bar"></div>
+      </div>
+      <div class="resize-handle"></div>
     </div>
-    <div class="content">
-      <textarea id="notepadTextarea" placeholder="Type your notes here..."></textarea>
-    </div>
-    <div class="resize-handle"></div>
-  </div>
 
-  <!-- Terminal Window -->
-  <div class="window" id="terminalWindow" style="width: 500px; height: 350px;">
-    <div class="title-bar">
-      <span>C:\WINDOWS\system32\cmd.exe</span>
-      <div>
-        <button class="win-btn minimize-btn" title="Minimize">_</button>
-        <button class="win-btn maximize-btn" title="Maximize"></button>
-        <button class="win-btn close-btn" title="Close">X</button>
+    <!-- Display Properties Window -->
+    <div class="window" id="displayPropertiesWindow">
+      <div class="title-bar">
+        <span>Display Properties</span>
+        <div>
+          <button class="win-btn minimize-btn" title="Minimize">_</button>
+          <button class="win-btn maximize-btn" title="Maximize"></button>
+          <button class="win-btn close-btn" title="Close">X</button>
+        </div>
       </div>
+      <div class="content">
+        <p>Background: Teal</p>
+      </div>
+      <div class="resize-handle"></div>
     </div>
-    <div class="content" id="terminalContent">
-      <div id="terminalOutput">
+
+    <!-- Notepad Window -->
+    <div class="window" id="notepadWindow">
+      <div class="title-bar">
+        <span>Untitled - Notepad</span>
+        <div>
+          <button class="win-btn minimize-btn" title="Minimize">_</button>
+          <button class="win-btn maximize-btn" title="Maximize"></button>
+          <button class="win-btn close-btn" title="Close">X</button>
+        </div>
+      </div>
+      <div class="content">
+        <textarea id="notepadTextarea" placeholder="Type your notes here..."></textarea>
+      </div>
+      <div class="resize-handle"></div>
+    </div>
+
+    <!-- Terminal Window -->
+    <div class="window" id="terminalWindow" style="width: 500px; height: 350px;">
+      <div class="title-bar">
+        <span>C:\WINDOWS\system32\cmd.exe</span>
+        <div>
+          <button class="win-btn minimize-btn" title="Minimize">_</button>
+          <button class="win-btn maximize-btn" title="Maximize"></button>
+          <button class="win-btn close-btn" title="Close">X</button>
+        </div>
+      </div>
+      <div class="content" id="terminalContent">
+        <div id="terminalOutput">
 <pre>Retro-DOS [Version 1.0.0]
 (c) 2024 Matthew Iglody. All rights reserved.
 Type 'help' for a list of commands.</pre>
+        </div>
+        <div class="terminal-input-line">
+          <span class="prompt">C:\&gt;</span>
+          <input type="text" id="terminalInput" autocomplete="off" spellcheck="false" />
+        </div>
       </div>
-      <div class="terminal-input-line">
-        <span class="prompt">C:\&gt;</span>
-        <input type="text" id="terminalInput" autocomplete="off" spellcheck="false" />
+      <div class="resize-handle"></div>
+    </div>
+
+    <!-- Run Dialog Window -->
+    <div class="window" id="runDialogWindow" style="width: 380px; height: auto;">
+      <div class="title-bar">
+        <span>Run</span>
+        <div>
+          <button class="win-btn close-btn" title="Close">X</button>
+        </div>
+      </div>
+      <div class="content" id="runDialogContent">
+        <img src="pics/icons/run.png" alt="Run icon" style="width: 32px; height: 32px; margin-right: 10px;">
+        <div style="flex-grow: 1;">
+          <p>Type the name of a program, folder, document, or Internet resource, and Windows will open it for you.</p>
+          <label for="runInput"><u>O</u>pen:</label>
+          <input type="text" id="runInput" autocomplete="off" spellcheck="false" />
+        </div>
+      </div>
+      <div class="run-dialog-buttons">
+        <button id="runOkBtn">OK</button>
+        <button id="runCancelBtn">Cancel</button>
+        <button id="runBrowseBtn">Browse...</button>
       </div>
     </div>
-    <div class="resize-handle"></div>
+
+    <!-- Explorer Window -->
+    <div class="window" id="explorerWindow">
+      <div class="title-bar">
+        <span>Exploring - Desktop</span>
+        <div>
+          <button class="win-btn minimize-btn" title="Minimize">_</button>
+          <button class="win-btn maximize-btn" title="Maximize"></button>
+          <button class="win-btn close-btn" title="Close">X</button>
+        </div>
+      </div>
+      <div class="content" id="explorerContent">
+        <ul id="fileList"></ul>
+      </div>
+      <div class="resize-handle"></div>
+    </div>
   </div>
 
-  <!-- Run Dialog Window -->
-  <div class="window" id="runDialogWindow" style="width: 380px; height: auto;">
-    <div class="title-bar">
-      <span>Run</span>
-      <div>
-        <button class="win-btn close-btn" title="Close">X</button>
-      </div>
-    </div>
-    <div class="content" id="runDialogContent">
-      <img src="pics/icons/run.png" alt="Run icon" style="width: 32px; height: 32px; margin-right: 10px;">
-      <div style="flex-grow: 1;">
-        <p>Type the name of a program, folder, document, or Internet resource, and Windows will open it for you.</p>
-        <label for="runInput"><u>O</u>pen:</label>
-        <input type="text" id="runInput" autocomplete="off" spellcheck="false" />
-      </div>
-    </div>
-    <div class="run-dialog-buttons">
-      <button id="runOkBtn">OK</button>
-      <button id="runCancelBtn">Cancel</button>
-      <button id="runBrowseBtn">Browse...</button>
-    </div>
-  </div>
-
-  <!-- Explorer Window -->
-  <div class="window" id="explorerWindow">
-    <div class="title-bar">
-      <span>Exploring - Desktop</span>
-      <div>
-        <button class="win-btn minimize-btn" title="Minimize">_</button>
-        <button class="win-btn maximize-btn" title="Maximize"></button>
-        <button class="win-btn close-btn" title="Close">X</button>
-      </div>
-    </div>
-    <div class="content" id="explorerContent">
-      <!-- File list will be generated by script.js -->
-      <ul id="fileList"></ul>
-    </div>
-    <div class="resize-handle"></div>
-  </div>
-  </div>
+  <!-- Taskbar -->
   <div id="taskbar" class="hidden">
     <div id="start">
       <img src="pics/icons/winlogo.png" alt="Start" />
@@ -279,6 +283,7 @@ Type 'help' for a list of commands.</pre>
     <div id="clock"></div>
   </div>
 
+  <!-- Start Menu -->
   <div id="startMenu">
     <div class="start-menu-sidebar">
       <b>Windows</b><span>98</span>
@@ -331,13 +336,13 @@ Type 'help' for a list of commands.</pre>
       </li>
       <li class="separator"></li>
       <li id="shutdownBtn">
-        <img src="./pics/icons/shutdown.png" />
+        <img src="pics/icons/shutdown.png" />
         <span>Sh<b>u</b>t Down...</span>
       </li>
     </ul>
   </div>
 
-  <!-- Desktop Context Menu -->
+  <!-- Context Menu -->
   <div id="contextMenu">
     <ul>
       <li data-action="arrangeIcons"><u>A</u>rrange Icons</li>
@@ -350,13 +355,13 @@ Type 'help' for a list of commands.</pre>
     </ul>
   </div>
 
-  <!-- Sound Effects -->
+  <!-- Sounds -->
   <audio id="sound-startup" src="sounds/startup.mp3" preload="auto"></audio>
   <audio id="sound-click" src="sounds/click.mp3" preload="auto"></audio>
   <audio id="sound-open" src="sounds/open.mp3" preload="auto"></audio>
   <audio id="sound-error" src="sounds/error.mp3" preload="auto"></audio>
 
-  <!-- Central Audio Element for Media Player -->
+  <!-- Central Media Player Audio -->
   <audio id="media-player-audio" crossOrigin="anonymous"></audio>
 
   <script src="script.js" defer></script>
