@@ -11,8 +11,12 @@ let resizeItem = null;
 let initialWidth, initialHeight;
 let initialMouseX, initialMouseY;
 let minWidth, minHeight;
-const taskbarTabsContainer = document.getElementById('taskbar-tabs');
-const desktopContainer = document.getElementById('main-desktop');
+let taskbarTabsContainer;
+let desktopContainer;
+let taskbarElement;
+let startBtn;
+let startMenu;
+let contextMenu;
 let activeWindowId = null;
 const maximizedWindows = new Map();
 
@@ -21,6 +25,32 @@ const isGithubPages = window.location.hostname.includes('github.io');
 const pathSegments = window.location.pathname.split('/').filter(Boolean);
 const repoBasePath = pathSegments.length ? '/' + pathSegments[0] + '/' : '/';
 const basePath = isGithubPages ? repoBasePath : '';
+
+let fileInput;
+let browseAudioBtn;
+let audioElement;
+let canvas;
+let ctx;
+let playBtn;
+let pauseBtn;
+let stopBtn;
+let volumeControl;
+let visualizerSelect;
+let nowPlaying;
+let seekBar;
+let playlistDropdown;
+let prevBtn;
+let nextBtn;
+let prevImageBtn;
+let nextImageBtn;
+let mainImage;
+let imageCaption;
+let thumbnailBar;
+let terminalInput;
+let terminalOutput;
+let runInput;
+let runOkBtn;
+let runCancelBtn;
 
 function resolveMediaPath(fileName) {
   return `${basePath}media/${fileName}`;
@@ -173,26 +203,6 @@ function makeDraggable(element, handle) {
   (handle || element).addEventListener('touchstart', onWindowDragStart, { passive: false });
 }
 
-// Make windows draggable and resizable
-document.querySelectorAll('.window').forEach(win => {
-  const focusHandler = () => focusWindow(win.id);
-  win.addEventListener('mousedown', focusHandler);
-  win.addEventListener('touchstart', focusHandler);
-
-  win.addEventListener('click', (e) => {
-    const windowId = win.id;
-    if (e.target.classList.contains('close-btn')) {
-      closeWindow(windowId);
-    } else if (e.target.classList.contains('minimize-btn')) {
-      minimizeWindow(windowId);
-    } else if (e.target.classList.contains('maximize-btn')) {
-      maximizeWindow(windowId);
-    }
-  });
-  makeDraggable(win, win.querySelector('.title-bar'));
-  makeResizable(win);
-});
-
 // --- Icon Click/Double-click Logic ---
 let clickTimer = null;
 let lastClickedIcon = null;
@@ -215,11 +225,6 @@ function handleIconClick(icon) {
     }, 300);
   }
 }
-
-document.querySelectorAll('.desktop-icon').forEach(icon => {
-  icon.addEventListener('mousedown', (e) => onIconDragStart(e, icon));
-  icon.addEventListener('touchstart', (e) => onIconDragStart(e, icon), { passive: false });
-});
 
 /**
  * Calculates the initial position and size for a new window
@@ -435,77 +440,6 @@ function layoutIcons() {
   });
 }
 
-// --- Start Menu Logic ---
-const startBtn = document.getElementById('start');
-const startMenu = document.getElementById('startMenu');
-
-startBtn.addEventListener('click', e => {
-  e.stopPropagation();
-  startMenu.style.display = startMenu.style.display === 'block' ? 'none' : 'block';
-  startBtn.classList.toggle('active');
-});
-
-document.addEventListener('click', e => {
-  if (startMenu.style.display === 'block' && !startMenu.contains(e.target) && e.target !== startBtn) {
-    startMenu.style.display = 'none';
-    startBtn.classList.remove('active');
-  }
-});
-
-// --- Global Key Listener ---
-window.addEventListener('keydown', e => {
-  if (e.key === 'Escape') {
-    if (activeWindowId) {
-      closeWindow(activeWindowId);
-    }
-  } else if (e.metaKey && e.key.toLowerCase() === 'r') {
-    e.preventDefault();
-    e.stopPropagation();
-    openWindow('runDialogWindow');
-    document.getElementById('runInput').focus();
-  }
-});
-
-startMenu.addEventListener('click', e => {
-  const targetLi = e.target.closest('li');
-  if (!targetLi || targetLi.classList.contains('has-submenu')) return;
-
-  const windowId = targetLi.dataset.windowId;
-  if (windowId) {
-    openWindow(windowId);
-    startMenu.style.display = 'none';
-    startBtn.classList.remove('active');
-  } else if (targetLi.id === 'shutdownBtn') {
-    shutdown();
-  }
-});
-
-// --- Context Menu Logic ---
-const contextMenu = document.getElementById('contextMenu');
-
-desktopContainer.addEventListener('contextmenu', e => {
-  e.preventDefault();
-  if (e.target === desktopContainer) {
-    contextMenu.style.top = `${e.clientY}px`;
-    contextMenu.style.left = `${e.clientX}px`;
-    contextMenu.style.display = 'block';
-  } else {
-    contextMenu.style.display = 'none';
-  }
-});
-
-document.addEventListener('click', e => {
-  if (e.button === 0) {
-    contextMenu.style.display = 'none';
-  }
-});
-
-contextMenu.addEventListener('click', e => {
-  const action = e.target.dataset.action;
-  if (action === 'refresh') layoutIcons();
-  if (action === 'properties') openWindow('displayPropertiesWindow');
-});
-
 // --- Window Resizing Functions ---
 function makeResizable(element) {
   const handle = element.querySelector('.resize-handle');
@@ -566,24 +500,6 @@ let currentSongIndex = null;
 let isCustomTrack = false;
 let customSongUrl = null;
 
-const fileInput = document.getElementById('audioFile');
-const browseAudioBtn = document.getElementById('browseAudioBtn');
-
-const audioElement = document.getElementById('media-player-audio');
-const canvas = document.getElementById('visualizer');
-const ctx = canvas.getContext('2d');
-
-const playBtn = document.getElementById('playBtn');
-const pauseBtn = document.getElementById('pauseBtn');
-const stopBtn = document.getElementById('stopBtn');
-const volumeControl = document.getElementById('volumeControl');
-const visualizerSelect = document.getElementById('visualizerSelect');
-const nowPlaying = document.getElementById('nowPlaying');
-const seekBar = document.getElementById('seekBar');
-const playlistDropdown = document.getElementById('playlistDropdown');
-const prevBtn = document.getElementById('prevBtn');
-const nextBtn = document.getElementById('nextBtn');
-
 function setPlaybackControlsEnabled(enabled) {
   [playBtn, pauseBtn, stopBtn].forEach(btn => {
     if (btn) {
@@ -639,6 +555,7 @@ function populatePlaylist() {
 
 // --- Load Song (✅ FIXED LOGIC) ---
 function loadSong(song, options = {}) {
+  if (!audioElement || !nowPlaying) return;
   const { index = null, autoplay = false, isCustom = false } = options;
 
   audioElement.pause();
@@ -736,56 +653,7 @@ function playRelativeSong(step, autoplay = false) {
   loadSong(playlist[nextIndex], { index: nextIndex, autoplay });
 }
 
-if (playlistDropdown) {
-  playlistDropdown.addEventListener('change', e => {
-    const value = e.target.value;
-    if (value === "") {
-      loadSong(null);
-      return;
-    }
 
-    const index = Number(value);
-    if (!Number.isNaN(index)) {
-      loadSong(playlist[index], { index, autoplay: true });
-    }
-  });
-}
-if (prevBtn) {\r\n  prevBtn.addEventListener('click', () => {\r\n    playRelativeSong(-1, true);\r\n  });\r\n}\r\n\r\nif (nextBtn) {\r\n  nextBtn.addEventListener('click', () => {\r\n    playRelativeSong(1, true);\r\n  });\r\n}\r\n
-if (browseAudioBtn) {
-  browseAudioBtn.addEventListener('click', () => {
-    if (fileInput) {
-      fileInput.click();
-    }
-  });
-}
-
-if (fileInput) {
-  fileInput.addEventListener('change', e => {
-    const file = e.target.files[0];
-    if (file) {
-      const fileUrl = URL.createObjectURL(file);
-      loadSong({ name: file.name, path: fileUrl }, { isCustom: true });
-      fileInput.value = '';
-    }
-  });
-}
-audioElement.addEventListener('loadedmetadata', () => {
-  if (!seekBar) return;
-  if (Number.isFinite(audioElement.duration)) {
-    seekBar.disabled = false;
-    seekBar.value = 0;
-  }
-});
-
-audioElement.addEventListener('ended', () => {
-  if (animationId) {
-    cancelAnimationFrame(animationId);
-    animationId = null;
-  }
-  if (seekBar) {
-    seekBar.value = 0;
-  }
-});
 
 // --- Image Viewer Logic ---
 const photoAlbum = [
@@ -799,13 +667,8 @@ const photoAlbum = [
 ];
 let currentPhotoIndex = 0;
 
-const mainImage = document.getElementById('mainImage');
-const imageCaption = document.getElementById('imageCaption');
-const thumbnailBar = document.querySelector('.thumbnail-bar');
-const prevImageBtn = document.getElementById('prevImageBtn');
-const nextImageBtn = document.getElementById('nextImageBtn');
-
 function initImageViewer() {
+  if (!thumbnailBar || !mainImage || !imageCaption) return;
   thumbnailBar.innerHTML = '';
   photoAlbum.forEach((photo, index) => {
     const thumb = document.createElement('img');
@@ -818,8 +681,9 @@ function initImageViewer() {
   displayPhoto(0);
 }
 
-// ✅ FIXED: now references photoAlbum, not images[]
+// FIXED: now references photoAlbum, not images[]
 function displayPhoto(index) {
+  if (!mainImage || !imageCaption || !thumbnailBar) return;
   if (index < 0 || index >= photoAlbum.length) return;
   currentPhotoIndex = index;
   const photo = photoAlbum[index];
@@ -832,15 +696,6 @@ function displayPhoto(index) {
   });
 }
 
-prevImageBtn.onclick = () => {
-  let newIndex = (currentPhotoIndex - 1 + photoAlbum.length) % photoAlbum.length;
-  displayPhoto(newIndex);
-};
-
-nextImageBtn.onclick = () => {
-  let newIndex = (currentPhotoIndex + 1) % photoAlbum.length;
-  displayPhoto(newIndex);
-};
 
 // --- Shutdown Logic ---
 function shutdown() {
@@ -857,9 +712,6 @@ function shutdown() {
 }
 
 // --- Terminal Logic ---
-const terminalInput = document.getElementById('terminalInput');
-const terminalOutput = document.getElementById('terminalOutput');
-
 const commandHistory = [];
 let historyIndex = -1;
 
@@ -933,38 +785,8 @@ function processCommand(command) {
   terminalOutput.scrollTop = terminalOutput.scrollHeight;
 }
 
-if (terminalInput) {
-  terminalInput.addEventListener('keydown', e => {
-    if (e.key === 'Enter' && terminalInput.value.trim() !== '') {
-      processCommand(terminalInput.value);
-      terminalInput.value = '';
-      terminalInput.focus();
-    } else if (e.key === 'ArrowUp') {
-      e.preventDefault();
-      if (historyIndex > 0) {
-        historyIndex--;
-        terminalInput.value = commandHistory[historyIndex];
-      }
-    } else if (e.key === 'ArrowDown') {
-      e.preventDefault();
-      if (historyIndex < commandHistory.length - 1) {
-        historyIndex++;
-        terminalInput.value = commandHistory[historyIndex];
-      }
-    }
-  });
-
-  const terminalWindow = document.getElementById('terminalWindow');
-  if (terminalWindow) {
-    terminalWindow.addEventListener('click', () => terminalInput.focus());
-  }
-}
 
 // --- Run Dialog Logic ---
-const runInput = document.getElementById('runInput');
-const runOkBtn = document.getElementById('runOkBtn');
-const runCancelBtn = document.getElementById('runCancelBtn');
-
 function executeRunCommand() {
   const command = runInput.value.trim();
   if (command) {
@@ -979,19 +801,11 @@ function executeRunCommand() {
   }
 }
 
-if (runInput) {
-  runOkBtn.addEventListener('click', executeRunCommand);
-  runCancelBtn.addEventListener('click', () => closeWindow('runDialogWindow'));
-  runInput.addEventListener('keydown', e => {
-    if (e.key === 'Enter') {
-      executeRunCommand();
-    }
-  });
-}
 
 // --- Explorer Logic ---
 function populateExplorer() {
   const fileList = document.getElementById('fileList');
+  if (!fileList) return;
   fileList.innerHTML = '';
 
   const desktopIcons = document.querySelectorAll('.desktop-icon');
@@ -1011,22 +825,10 @@ function populateExplorer() {
   });
 }
 
-// --- Initialization ---
-populatePlaylist();
-setPlaybackControlsEnabled(false);
-setPlaylistNavigationEnabled(false);
-resetSeekBar();
-initImageViewer();
-layoutIcons();
-
-document.addEventListener('DOMContentLoaded', () => {
-  document.getElementById('main-desktop').classList.remove('hidden');
-  document.getElementById('taskbar').classList.remove('hidden');
-  layoutIcons();
-});
 
 // --- Visualizer Functions (Bars, Waveform, Circle) ---
 function visualizeBars() {
+  if (!ctx || !canvas || !analyser) return;
   analyser.getByteFrequencyData(dataArray);
   ctx.fillStyle = 'black';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -1041,6 +843,7 @@ function visualizeBars() {
 }
 
 function visualizeWaveform() {
+  if (!ctx || !canvas || !analyser) return;
   analyser.getByteTimeDomainData(dataArray);
   ctx.fillStyle = 'black';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -1064,6 +867,7 @@ function visualizeWaveform() {
 }
 
 function visualizeCircle() {
+  if (!ctx || !canvas || !analyser) return;
   analyser.getByteFrequencyData(dataArray);
   ctx.fillStyle = 'black';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -1094,6 +898,7 @@ const visualizers = {
 };
 
 function visualize() {
+  if (!visualizerSelect || !ctx || !canvas || !analyser) return;
   animationId = requestAnimationFrame(visualize);
   const selectedVisualizer = visualizerSelect.value;
   if (visualizers[selectedVisualizer]) {
@@ -1103,7 +908,7 @@ function visualize() {
 
 // --- Audio Controls ---
 async function playAudio() {
-  if (!audioElement.src || audioElement.src === '') return;
+  if\ \(!audioElement\ \|\|\ !audioElement\.src\ \|\|\ audioElement\.src\ ===\ ''\) return;
 
   try {
     if (!audioCtx) {
@@ -1131,52 +936,321 @@ async function playAudio() {
   } catch (err) {
     console.error("Error trying to play audio:", err);
   }
-}
+}\r
 
-if (playBtn) {
-  playBtn.addEventListener('click', () => {
-    playAudio();
+
+function initDesktop() {
+  taskbarTabsContainer = document.getElementById('taskbar-tabs');
+  desktopContainer = document.getElementById('main-desktop');
+  taskbarElement = document.getElementById('taskbar');
+  startBtn = document.getElementById('start');
+  startMenu = document.getElementById('startMenu');
+  contextMenu = document.getElementById('contextMenu');
+
+  fileInput = document.getElementById('audioFile');
+  browseAudioBtn = document.getElementById('browseAudioBtn');
+  audioElement = document.getElementById('media-player-audio');
+  canvas = document.getElementById('visualizer');
+  ctx = canvas ? canvas.getContext('2d') : null;
+  playBtn = document.getElementById('playBtn');
+  pauseBtn = document.getElementById('pauseBtn');
+  stopBtn = document.getElementById('stopBtn');
+  volumeControl = document.getElementById('volumeControl');
+  visualizerSelect = document.getElementById('visualizerSelect');
+  nowPlaying = document.getElementById('nowPlaying');
+  seekBar = document.getElementById('seekBar');
+  playlistDropdown = document.getElementById('playlistDropdown');
+  prevBtn = document.getElementById('prevBtn');
+  nextBtn = document.getElementById('nextBtn');
+  prevImageBtn = document.getElementById('prevImageBtn');
+  nextImageBtn = document.getElementById('nextImageBtn');
+  mainImage = document.getElementById('mainImage');
+  imageCaption = document.getElementById('imageCaption');
+  thumbnailBar = document.querySelector('.thumbnail-bar');
+  terminalInput = document.getElementById('terminalInput');
+  terminalOutput = document.getElementById('terminalOutput');
+  runInput = document.getElementById('runInput');
+  runOkBtn = document.getElementById('runOkBtn');
+  runCancelBtn = document.getElementById('runCancelBtn');
+
+  if (!desktopContainer || !taskbarTabsContainer) {
+    console.error('Desktop markup is missing required elements.');
+    return;
+  }
+
+  document.querySelectorAll('.window').forEach(win => {
+    const focusHandler = () => focusWindow(win.id);
+    win.addEventListener('mousedown', focusHandler);
+    win.addEventListener('touchstart', focusHandler);
+
+    win.addEventListener('click', (e) => {
+      const windowId = win.id;
+      if (e.target.classList.contains('close-btn')) {
+        closeWindow(windowId);
+      } else if (e.target.classList.contains('minimize-btn')) {
+        minimizeWindow(windowId);
+      } else if (e.target.classList.contains('maximize-btn')) {
+        maximizeWindow(windowId);
+      }
+    });
+
+    makeDraggable(win, win.querySelector('.title-bar'));
+    makeResizable(win);
   });
-}
 
-if (pauseBtn) {
-  pauseBtn.addEventListener('click', () => {
-    if (!audioElement || !audioElement.src) return;
-    audioElement.pause();
-    cancelAnimationFrame(animationId);
+  document.querySelectorAll('.desktop-icon').forEach(icon => {
+    icon.addEventListener('mousedown', (e) => onIconDragStart(e, icon));
+    icon.addEventListener('touchstart', (e) => onIconDragStart(e, icon), { passive: false });
   });
-}
 
-if (stopBtn) {
-  stopBtn.addEventListener('click', () => {
-    if (!audioElement || !audioElement.src) return;
-    audioElement.pause();
-    audioElement.currentTime = 0;
-    if (animationId) {
-      cancelAnimationFrame(animationId);
-      animationId = null;
+  if (startBtn && startMenu) {
+    startBtn.addEventListener('click', e => {
+      e.stopPropagation();
+      const isOpen = startMenu.style.display === 'block';
+      startMenu.style.display = isOpen ? 'none' : 'block';
+      startBtn.classList.toggle('active', !isOpen);
+    });
+
+    document.addEventListener('click', e => {
+      if (startMenu.style.display === 'block' && !startMenu.contains(e.target) && e.target !== startBtn) {
+        startMenu.style.display = 'none';
+        startBtn.classList.remove('active');
+      }
+    });
+
+    startMenu.addEventListener('click', e => {
+      const targetLi = e.target.closest('li');
+      if (!targetLi || targetLi.classList.contains('has-submenu')) return;
+
+      const windowId = targetLi.dataset.windowId;
+      if (windowId) {
+        openWindow(windowId);
+        startMenu.style.display = 'none';
+        startBtn.classList.remove('active');
+      } else if (targetLi.id === 'shutdownBtn') {
+        shutdown();
+      }
+    });
+  }
+
+  window.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+      if (activeWindowId) {
+        closeWindow(activeWindowId);
+      }
+    } else if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'r') {
+      e.preventDefault();
+      e.stopPropagation();
+      openWindow('runDialogWindow');
+      if (runInput) {
+        runInput.focus();
+      }
     }
-    loadSong(null);
   });
+
+  if (contextMenu) {
+    desktopContainer.addEventListener('contextmenu', e => {
+      e.preventDefault();
+      if (e.target === desktopContainer) {
+        contextMenu.style.top = ${e.clientY}px;
+        contextMenu.style.left = ${e.clientX}px;
+        contextMenu.style.display = 'block';
+      } else {
+        contextMenu.style.display = 'none';
+      }
+    });
+
+    document.addEventListener('click', e => {
+      if (e.button === 0) {
+        contextMenu.style.display = 'none';
+      }
+    });
+
+    contextMenu.addEventListener('click', e => {
+      const action = e.target.dataset.action;
+      if (action === 'refresh') layoutIcons();
+      if (action === 'properties') openWindow('displayPropertiesWindow');
+    });
+  }
+
+  if (playlistDropdown) {
+    playlistDropdown.addEventListener('change', e => {
+      const value = e.target.value;
+      if (value === '') {
+        loadSong(null);
+        return;
+      }
+
+      const index = Number(value);
+      if (!Number.isNaN(index)) {
+        loadSong(playlist[index], { index, autoplay: true });
+      }
+    });
+  }
+
+  if (prevBtn) {
+    prevBtn.addEventListener('click', () => {
+      playRelativeSong(-1, true);
+    });
+  }
+
+  if (nextBtn) {
+    nextBtn.addEventListener('click', () => {
+      playRelativeSong(1, true);
+    });
+  }
+
+  if (browseAudioBtn && fileInput) {
+    browseAudioBtn.addEventListener('click', () => {
+      fileInput.click();
+    });
+  }
+
+  if (fileInput) {
+    fileInput.addEventListener('change', e => {
+      const file = e.target.files[0];
+      if (file) {
+        const fileUrl = URL.createObjectURL(file);
+        loadSong({ name: file.name, path: fileUrl }, { isCustom: true });
+        fileInput.value = '';
+      }
+    });
+  }
+
+  if (playBtn) {
+    playBtn.addEventListener('click', () => {
+      playAudio();
+    });
+  }
+
+  if (pauseBtn) {
+    pauseBtn.addEventListener('click', () => {
+      if (!audioElement || !audioElement.src) return;
+      audioElement.pause();
+      cancelAnimationFrame(animationId);
+    });
+  }
+
+  if (stopBtn) {
+    stopBtn.addEventListener('click', () => {
+      if (!audioElement || !audioElement.src) return;
+      audioElement.pause();
+      audioElement.currentTime = 0;
+      if (animationId) {
+        cancelAnimationFrame(animationId);
+        animationId = null;
+      }
+      loadSong(null);
+    });
+  }
+
+  if (audioElement && seekBar) {
+    seekBar.addEventListener('input', () => {
+      if (!audioElement.duration) return;
+      audioElement.currentTime = (seekBar.value / 100) * audioElement.duration;
+    });
+
+    audioElement.addEventListener('timeupdate', () => {
+      if (!audioElement.duration) return;
+      seekBar.value = (audioElement.currentTime / audioElement.duration) * 100;
+    });
+
+    audioElement.addEventListener('loadedmetadata', () => {
+      if (Number.isFinite(audioElement.duration)) {
+        seekBar.disabled = false;
+        seekBar.value = 0;
+      }
+    });
+
+    audioElement.addEventListener('ended', () => {
+      if (animationId) {
+        cancelAnimationFrame(animationId);
+        animationId = null;
+      }
+      seekBar.value = 0;
+    });
+  }
+
+  if (volumeControl && audioElement) {
+    volumeControl.addEventListener('input', () => {
+      audioElement.volume = Number(volumeControl.value);
+    });
+    audioElement.volume = Number(volumeControl.value || 1);
+  } else if (audioElement) {
+    audioElement.volume = 1;
+  }
+
+  if (prevImageBtn) {
+    prevImageBtn.addEventListener('click', () => {
+      const newIndex = (currentPhotoIndex - 1 + photoAlbum.length) % photoAlbum.length;
+      displayPhoto(newIndex);
+    });
+  }
+
+  if (nextImageBtn) {
+    nextImageBtn.addEventListener('click', () => {
+      const newIndex = (currentPhotoIndex + 1) % photoAlbum.length;
+      displayPhoto(newIndex);
+    });
+  }
+
+  if (terminalInput && terminalOutput) {
+    terminalInput.addEventListener('keydown', e => {
+      if (e.key === 'Enter' && terminalInput.value.trim() !== '') {
+        processCommand(terminalInput.value);
+        terminalInput.value = '';
+        terminalInput.focus();
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        if (historyIndex > 0) {
+          historyIndex--;
+          terminalInput.value = commandHistory[historyIndex];
+        }
+      } else if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        if (historyIndex < commandHistory.length - 1) {
+          historyIndex++;
+          terminalInput.value = commandHistory[historyIndex];
+        } else if (historyIndex === commandHistory.length - 1) {
+          historyIndex++;
+          terminalInput.value = '';
+        }
+      }
+    });
+
+    const terminalWindow = document.getElementById('terminalWindow');
+    if (terminalWindow) {
+      terminalWindow.addEventListener('click', () => terminalInput.focus());
+    }
+  }
+
+  if (runInput && runOkBtn && runCancelBtn) {
+    runOkBtn.addEventListener('click', executeRunCommand);
+    runCancelBtn.addEventListener('click', () => closeWindow('runDialogWindow'));
+    runInput.addEventListener('keydown', e => {
+      if (e.key === 'Enter') {
+        executeRunCommand();
+      }
+    });
+  }
+
+  populatePlaylist();
+  setPlaybackControlsEnabled(false);
+  setPlaylistNavigationEnabled(false);
+  resetSeekBar();
+  initImageViewer();
+  layoutIcons();
+  populateExplorer();
+
+  desktopContainer.classList.remove('hidden');
+  if (taskbarElement) {
+    taskbarElement.classList.remove('hidden');
+  }
+
+  updateClock();
+  setInterval(updateClock, 1000);
+  window.addEventListener('resize', layoutIcons);
 }
 
-seekBar.oninput = () => {
-  if (!audioElement || !audioElement.src || !audioElement.duration) return;
-  audioElement.currentTime = (seekBar.value / 100) * audioElement.duration;
-};
-
-audioElement.ontimeupdate = () => {
-  if (audioElement && audioElement.duration) {
-    seekBar.value = (audioElement.currentTime / audioElement.duration) * 100;
-  }
-};
-
-volumeControl.oninput = () => {
-  if (audioElement) {
-    audioElement.volume = volumeControl.value;
-  }
-};
-
-audioElement.volume = volumeControl.value;
-
+document.addEventListener('DOMContentLoaded', initDesktop);
 
