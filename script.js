@@ -1,3 +1,32 @@
+const ICON_GRID_CONFIG = {
+  x: 20, // initial x offset
+  y: 20, // initial y offset
+  w: 90, // width of a grid cell
+  h: 100 // height of a grid cell
+};
+
+function layoutIcons() {
+  const desktop = document.getElementById('main-desktop');
+  const icons = Array.from(desktop.getElementsByClassName('desktop-icon'));
+  const taskbarHeight = document.getElementById('taskbar').offsetHeight;
+  const desktopHeight = window.innerHeight - taskbarHeight;
+  const iconsPerCol = Math.floor((desktopHeight - ICON_GRID_CONFIG.y) / ICON_GRID_CONFIG.h);
+
+  icons.forEach((icon, index) => {
+    const col = Math.floor(index / iconsPerCol);
+    const row = index % iconsPerCol;
+    icon.style.left = `${ICON_GRID_CONFIG.x + col * ICON_GRID_CONFIG.w}px`;
+    icon.style.top = `${ICON_GRID_CONFIG.y + row * ICON_GRID_CONFIG.h}px`;
+  });
+}
+
+function getPointerCoords(e) {
+  if (e.changedTouches) {
+    return { x: e.changedTouches[0].clientX, y: e.changedTouches[0].clientY };
+  }
+  return { x: e.clientX, y: e.clientY };
+}
+
 // --- Drag and Drop State & Logic ---
 let dragItem = null;
 let isDragging = false;
@@ -71,32 +100,34 @@ function onIconDragMove(e) {
  * Ends the icon drag operation.
  */
 function onIconDragEnd() {
-  if (dragItem) dragItem.classList.remove('dragging');
-  if (isDragging && dragItem && dragItem.classList.contains('desktop-icon')) {
-    const iconToSnap = dragItem;
-    const container = document.getElementById('main-desktop');
-    const currentLeft = iconToSnap.offsetLeft;
-    const currentTop = iconToSnap.offsetTop;
-    let snappedLeft = Math.round((currentLeft - ICON_GRID_CONFIG.x) / ICON_GRID_CONFIG.w) * ICON_GRID_CONFIG.w + ICON_GRID_CONFIG.x;
-    let snappedTop = Math.round((currentTop - ICON_GRID_CONFIG.y) / ICON_GRID_CONFIG.h) * ICON_GRID_CONFIG.h + ICON_GRID_CONFIG.y;
-    const maxLeft = container.clientWidth - iconToSnap.clientWidth;
-    const taskbarHeight = document.getElementById('taskbar').offsetHeight;
-    const maxTop = window.innerHeight - iconToSnap.clientHeight - taskbarHeight;
-    snappedLeft = Math.max(ICON_GRID_CONFIG.x, Math.min(snappedLeft, maxLeft));
-    snappedTop = Math.max(ICON_GRID_CONFIG.y, Math.min(snappedTop, maxTop));
-    const otherIcons = Array.from(document.querySelectorAll('.desktop-icon')).filter(i => i !== iconToSnap);
-    let isOccupied = otherIcons.some(other => {
-      return Math.abs(other.offsetLeft - snappedLeft) < ICON_GRID_CONFIG.w / 2 &&
-             Math.abs(other.offsetTop - snappedTop) < ICON_GRID_CONFIG.h / 2;
-    });
-    if (!isOccupied) {
-      iconToSnap.style.transition = 'left 0.1s ease-out, top 0.1s ease-out';
-      iconToSnap.style.left = `${snappedLeft}px`;
-      iconToSnap.style.top = `${snappedTop}px`;
-      setTimeout(() => { if (iconToSnap) iconToSnap.style.transition = ''; }, 100);
+  if (dragItem) {
+    if (isDragging) {
+      dragItem.classList.remove('dragging');
+      const iconToSnap = dragItem;
+      const container = document.getElementById('main-desktop');
+      const currentLeft = iconToSnap.offsetLeft;
+      const currentTop = iconToSnap.offsetTop;
+      let snappedLeft = Math.round((currentLeft - ICON_GRID_CONFIG.x) / ICON_GRID_CONFIG.w) * ICON_GRID_CONFIG.w + ICON_GRID_CONFIG.x;
+      let snappedTop = Math.round((currentTop - ICON_GRID_CONFIG.y) / ICON_GRID_CONFIG.h) * ICON_GRID_CONFIG.h + ICON_GRID_CONFIG.y;
+      const maxLeft = container.clientWidth - iconToSnap.clientWidth;
+      const taskbarHeight = document.getElementById('taskbar').offsetHeight;
+      const maxTop = window.innerHeight - iconToSnap.clientHeight - taskbarHeight;
+      snappedLeft = Math.max(ICON_GRID_CONFIG.x, Math.min(snappedLeft, maxLeft));
+      snappedTop = Math.max(ICON_GRID_CONFIG.y, Math.min(snappedTop, maxTop));
+      const otherIcons = Array.from(document.querySelectorAll('.desktop-icon')).filter(i => i !== iconToSnap);
+      let isOccupied = otherIcons.some(other => {
+        return Math.abs(other.offsetLeft - snappedLeft) < ICON_GRID_CONFIG.w / 2 &&
+               Math.abs(other.offsetTop - snappedTop) < ICON_GRID_CONFIG.h / 2;
+      });
+      if (!isOccupied) {
+        iconToSnap.style.transition = 'left 0.1s ease-out, top 0.1s ease-out';
+        iconToSnap.style.left = `${snappedLeft}px`;
+        iconToSnap.style.top = `${snappedTop}px`;
+        setTimeout(() => { if (iconToSnap) iconToSnap.style.transition = ''; }, 100);
+      }
+    } else {
+      handleIconClick(dragItem);
     }
-  } else if (!isDragging && dragItem) {
-    handleIconClick(dragItem);
   }
   isDragging = false;
   dragItem = null;
@@ -104,6 +135,39 @@ function onIconDragEnd() {
   document.removeEventListener('mouseup', onIconDragEnd);
   document.removeEventListener('touchmove', onIconDragMove);
   document.removeEventListener('touchend', onIconDragEnd);
+}
+
+function handleIconClick(icon) {
+  const windowId = icon.dataset.windowId;
+  if (windowId) {
+    openWindow(windowId);
+  }
+}
+
+function openWindow(windowId) {
+  const windowElement = document.getElementById(windowId);
+  if (windowElement) {
+    windowElement.style.display = 'flex';
+    bringToFront(windowId);
+  }
+}
+
+function closeWindow(windowId) {
+  const windowElement = document.getElementById(windowId);
+  if (windowElement) {
+    windowElement.style.display = 'none';
+  }
+}
+
+function bringToFront(windowId) {
+  const windowElement = document.getElementById(windowId);
+  if (windowElement) {
+    windowElement.style.zIndex = zIndexCounter++;
+    document.querySelectorAll('.window').forEach(win => {
+      win.classList.remove('active');
+    });
+    windowElement.classList.add('active');
+  }
 }
 
 // --- Window Dragging Logic ---
@@ -143,9 +207,13 @@ const visualizerSelect = document.getElementById('visualizerSelect');
 const nowPlaying = document.getElementById('nowPlaying');
 
 const playlist = [
-  { name: "zwan_love_lies_in_ruin_acoustic_2003.mp3", path: "media/zwan_love_lies_in_ruin_acoustic_2003.mp3" },
+  { name: "baby_youre_a_haunted_house_mels_version.m4a", path: "media/baby_youre_a_haunted_house_mels_version.m4a" },
+  { name: "djali_zwan_love_to_love.mp3", path: "media/djali_zwan_love_to_love.mp3" },
+  { name: "jethro_tull_teacher.mp3", path: "media/jethro_tull_teacher.mp3" },
   { name: "praise_you_fatboy_slim.mp3", path: "media/praise_you_fatboy_slim.mp3" },
-  { name: "jethro_tull_teacher.mp3", path: "media/jethro_tull_teacher.mp3" }
+  { name: "the_four_tops_are_you_man_enough.mp3", path: "media/the_four_tops_are_you_man_enough.mp3" },
+  { name: "zwan_love_lies_in_ruin_acoustic.mp3", path: "media/zwan_love_lies_in_ruin_acoustic.mp3" },
+  { name: "zwan_wasting_time.mp3", path: "media/zwan_wasting_time.mp3" }
 ];
 
 function populatePlaylist() {
@@ -241,6 +309,52 @@ function populateExplorer() {
   });
 }
 
+const startButton = document.getElementById('start');
+const startMenu = document.getElementById('startMenu');
+
+startButton.addEventListener('click', (event) => {
+  event.stopPropagation();
+  startMenu.style.display = startMenu.style.display === 'block' ? 'none' : 'block';
+  startButton.classList.toggle('active');
+});
+
+document.addEventListener('click', () => {
+  startMenu.style.display = 'none';
+  startButton.classList.remove('active');
+});
+
+startMenu.addEventListener('click', (event) => {
+  event.stopPropagation();
+});
+
+function updateClock() {
+  const clockElement = document.getElementById('clock');
+  if (clockElement) {
+    const now = new Date();
+    let hours = now.getHours();
+    const minutes = now.getMinutes().toString().padStart(2, '0');
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    hours = hours % 12;
+    hours = hours ? hours : 12; // the hour '0' should be '12'
+    const strTime = hours.toString().padStart(2, '0') + ':' + minutes + ' ' + ampm;
+    clockElement.textContent = strTime;
+  }
+}
+
 populatePlaylist();
 initImageViewer();
 layoutIcons();
+updateClock();
+setInterval(updateClock, 1000);
+
+document.querySelectorAll('.desktop-icon').forEach(icon => {
+  icon.addEventListener('mousedown', (e) => onIconDragStart(e, icon));
+  icon.addEventListener('touchstart', (e) => onIconDragStart(e, icon), { passive: false });
+});
+
+document.querySelectorAll('.close-btn').forEach(btn => {
+    const windowElement = btn.closest('.window');
+    btn.addEventListener('click', () => {
+        closeWindow(windowElement.id);
+    });
+});
