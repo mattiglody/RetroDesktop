@@ -4,6 +4,7 @@ body {
   font-family: 'MS Sans Serif', sans-serif;
   overflow: hidden;
 }
+
 .desktop-icon {
   position: absolute;
   width: 72px;
@@ -12,10 +13,12 @@ body {
   color: white;
   user-select: none;
 }
+
 .desktop-icon img {
   width: 48px;
   height: 48px;
 }
+
 .window {
   position: absolute;
   width: 400px;
@@ -24,13 +27,13 @@ body {
   box-shadow: 2px 2px #404040;
   display: none;
   z-index: 10;
-  /* For resizing */
   flex-direction: column;
   min-width: 250px;
   min-height: 150px;
-  box-sizing: border-box; /* For more predictable sizing */
-  overflow: hidden; /* Prevents content from spilling during resize */
+  box-sizing: border-box;
+  overflow: hidden;
 }
+
 .title-bar {
   background: #000080;
   color: white;
@@ -41,6 +44,7 @@ body {
   justify-content: space-between;
   align-items: center;
 }
+
 .title-bar .win-btn {
   background: #c0c0c0;
   border: 1px solid #808080;
@@ -53,29 +57,35 @@ body {
   line-height: 10px;
   padding: 0;
 }
+
 .maximize-btn::before {
-  content: '\25A1'; /* Square symbol */
+  content: '\25A1';
   font-size: 12px;
 }
+
 .window.maximized .maximize-btn::before {
-  content: '\25A3'; /* Square in a square symbol */
+  content: '\25A3';
 }
+
 .content {
   padding: 5px;
   background: #ffffff;
-  flex-grow: 1; /* Allow content to fill window */
+  flex-grow: 1;
   overflow: auto;
-  position: relative; /* For child elements */
+  position: relative;
 }
+
 .content a {
   color: #0000ff;
   text-decoration: underline;
 }
+
 .content ul li {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
 #taskbar {
   position: absolute;
   bottom: 0;
@@ -88,6 +98,7 @@ body {
   align-items: center;
   padding: 0 2px;
 }
+
 #start {
   background: #c0c0c0;
   border: 2px outset #fff;
@@ -97,24 +108,30 @@ body {
   align-items: center;
   gap: 5px;
 }
+
 #start img {
   width: 20px;
   height: 20px;
 }
+
 .taskbar-tab img {
   width: 16px;
   height: 16px;
 }
-#start.active, #start:active {
+
+#start.active,
+#start:active {
   border-style: inset;
 }
+
 #taskbar-tabs {
   display: flex;
   flex-grow: 1;
   height: 100%;
-  min-width: 0; /* Allow the container to shrink past its content's min-width */
+  min-width: 0;
   overflow: hidden;
 }
+
 .taskbar-tab {
   background: #c0c0c0;
   border: 2px outset #fff;
@@ -128,29 +145,35 @@ body {
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
 .taskbar-tab.active {
   border-style: inset;
   background: #e0e0e0;
 }
+
 #clock {
   margin-left: auto;
   padding: 0 10px;
 }
+
 #mediaPlayerContent {
   padding: 0;
   display: flex;
   flex-direction: column;
 }
+
 .visualizer-container {
   position: relative;
   flex-grow: 1;
   background: black;
-  display: flex; /* To make canvas fill it */
+  display: flex;
 }
+
 #mediaPlayer #visualizer {
   flex-grow: 1;
   margin: 0;
 }
+
 #nowPlaying {
   position: absolute;
   top: 5px;
@@ -166,15 +189,17 @@ body {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  display: none; /* Hidden by default */
-  pointer-events: none; /* Allow clicks to pass through */
+  display: none;
+  pointer-events: none;
 }
+
 #imageViewerContent {
   padding: 0;
   display: flex;
   flex-direction: column;
-  background: #333; /* Dark background for viewer */
+  background: #333;
 }
+
 .image-display-area {
   flex-grow: 1;
   display: flex;
@@ -183,12 +208,14 @@ body {
   overflow: hidden;
   padding: 5px;
 }
+
 #mainImage {
   max-width: 100%;
   max-height: 100%;
   object-fit: contain;
   border: 2px solid #c0c0c0;
 }
+
 .image-controls {
   display: flex;
   justify-content: space-between;
@@ -197,10 +224,12 @@ body {
   background: #c0c0c0;
   border-top: 2px solid #808080;
 }
+
 #imageCaption {
   color: #000;
   font-weight: bold;
 }
+
 .thumbnail-bar {
   background: #c0c0c0;
   padding: 5px;
@@ -209,15 +238,18 @@ body {
   overflow-x: auto;
   border-top: 2px solid #808080;
 }
+
 .media-footer {
   background: #c0c0c0;
   padding: 5px;
   border-top: 2px solid #808080;
 }
+
 .media-progress input[type=range] {
   width: 100%;
   margin: 0 0 5px 0;
 }
+
 .media-controls {
   display: flex;
   justify-content: space-between;
@@ -225,16 +257,20 @@ body {
   flex-wrap: wrap;
   gap: 5px;
 }
+
 .playback-buttons button {
   background: #c0c0c0;
   border: 2px outset #fff;
   cursor: pointer;
 }
+
 .file-and-volume {
   display: flex;
   align-items: center;
   gap: 10px;
+  flex-wrap: wrap;
 }
+
 .win-button {
   background: #c0c0c0;
   border: 2px outset #fff;
@@ -243,6 +279,7 @@ body {
   font-size: 14px;
   user-select: none;
 }
+
 select.win-button {
   -webkit-appearance: none;
   -moz-appearance: none;
@@ -254,9 +291,7 @@ select.win-button {
   padding-right: 2em;
   max-width: 150px;
 }
-.file-and-volume {
-  flex-wrap: wrap;
-}
+
 .player-controls {
   display: flex;
   justify-content: center;
@@ -264,29 +299,35 @@ select.win-button {
   margin: 5px 0;
   gap: 5px;
 }
-.player-controls button, .player-controls input[type=range] {
+
+.player-controls button,
+.player-controls input[type=range] {
   background: #c0c0c0;
   border: 2px outset #fff;
   cursor: pointer;
 }
+
 .win-button:active {
   border-style: inset;
 }
+
 .disabled {
   opacity: 0.5;
   pointer-events: none;
 }
+
 #startMenu {
   position: absolute;
-  bottom: 30px; /* Height of taskbar */
+  bottom: 30px;
   left: 0;
   width: 220px;
   background: #c0c0c0;
   border: 2px outset #fff;
-  display: none; /* Initially hidden */
+  display: none;
   z-index: 1000;
   padding: 2px;
 }
+
 .start-menu-sidebar {
   position: absolute;
   left: 0;
@@ -302,16 +343,19 @@ select.win-button {
   padding: 10px 2px;
   text-align: center;
 }
+
 .start-menu-sidebar span {
   font-weight: bold;
   color: white;
 }
+
 .start-menu-items {
   list-style: none;
   margin: 0;
   padding: 0;
-  margin-left: 27px; /* Width of sidebar */
+  margin-left: 27px;
 }
+
 .start-menu-items li {
   display: flex;
   align-items: center;
@@ -319,18 +363,22 @@ select.win-button {
   cursor: pointer;
   gap: 8px;
 }
+
 .start-menu-items li:hover {
   background: #000080;
   color: white;
 }
+
 .start-menu-items li img {
   width: 32px;
   height: 32px;
 }
+
 .start-menu-items li b {
   text-decoration: underline;
   font-weight: normal;
 }
+
 .start-menu-items .separator {
   height: 1px;
   background: #808080;
@@ -338,41 +386,49 @@ select.win-button {
   margin: 4px 0;
   padding: 0;
 }
+
 .start-menu-items li.has-submenu {
   position: relative;
 }
+
 .start-menu-items li.has-submenu::after {
-  content: 'â–º';
+  content: '►';
   position: absolute;
   right: 5px;
   top: 50%;
   transform: translateY(-50%);
 }
+
 .start-menu-items li:hover.has-submenu::after {
   color: white;
 }
+
 .submenu {
   position: absolute;
   left: 100%;
-  top: -2px; /* Align with parent li */
+  top: -2px;
   display: none;
   background: #c0c0c0;
   border: 2px outset #fff;
   padding: 2px;
   z-index: 1001;
-  width: 220px; /* Same as start menu */
+  width: 220px;
 }
+
 .submenu ul {
   list-style: none;
   margin: 0;
   padding: 0;
 }
+
 .has-submenu:hover > .submenu {
   display: block;
 }
+
 #explorerContent {
   background: white;
 }
+
 #fileList {
   list-style: none;
   margin: 0;
@@ -398,11 +454,13 @@ select.win-button {
   align-items: center;
   z-index: 9999;
 }
+
 .shutdown-screen img {
   width: 64px;
   height: 64px;
   margin-bottom: 20px;
 }
+
 .resize-handle {
   position: absolute;
   bottom: 0;
@@ -411,6 +469,7 @@ select.win-button {
   height: 16px;
   cursor: se-resize;
 }
+
 .thumbnail-bar img {
   height: 60px;
   width: 60px;
@@ -418,20 +477,24 @@ select.win-button {
   cursor: pointer;
   border: 2px solid #808080;
 }
+
 .thumbnail-bar img.active {
   border-color: #000080;
   border-width: 3px;
 }
+
 .window.maximized {
   top: 0 !important;
   left: 0 !important;
   width: 100vw !important;
-  height: calc(100vh - 30px) !important; /* 30px is taskbar height */
+  height: calc(100vh - 30px) !important;
   border: none;
 }
+
 .window.maximized .resize-handle {
   display: none;
 }
+
 #contextMenu {
   position: absolute;
   display: none;
@@ -440,19 +503,23 @@ select.win-button {
   z-index: 2000;
   padding: 2px;
 }
+
 #contextMenu ul {
   list-style: none;
   margin: 0;
   padding: 0;
 }
+
 #contextMenu li {
   padding: 5px 20px;
   cursor: pointer;
 }
+
 #contextMenu li:hover {
   background: #000080;
   color: white;
 }
+
 #contextMenu .separator {
   height: 1px;
   background: #808080;
@@ -461,22 +528,26 @@ select.win-button {
   padding: 0;
   cursor: default;
 }
+
 #contextMenu .separator:hover {
-  background: #808080; /* Prevent hover effect */
+  background: #808080;
 }
+
 #notepadTextarea {
   width: 100%;
   height: 100%;
   border: none;
   outline: none;
-  resize: none; /* Prevent browser's default textarea resize handle */
-  font-family: 'MS Sans Serif', monospace; /* Classic monospace font */
+  resize: none;
+  font-family: 'MS Sans Serif', monospace;
   padding: 5px;
-  box-sizing: border-box; /* Include padding in width/height */
+  box-sizing: border-box;
 }
+
 .hidden {
   display: none !important;
 }
+
 #loading-screen {
   position: fixed;
   top: 0;
@@ -491,10 +562,12 @@ select.win-button {
   align-items: center;
   transition: opacity 0.5s ease-out;
 }
+
 .loading-logo {
   width: 320px;
   margin-bottom: 20px;
 }
+
 .loading-bar-container {
   width: 320px;
   height: 24px;
@@ -503,6 +576,7 @@ select.win-button {
   padding: 2px;
   box-sizing: border-box;
 }
+
 .loading-bar {
   width: 0;
   height: 100%;
@@ -511,35 +585,29 @@ select.win-button {
 }
 
 @keyframes load {
-  from {
-    width: 0%;
-  }
-  to {
-    width: 100%;
-  }
+  from { width: 0%; }
+  to { width: 100%; }
 }
 
 /* --- Terminal Styles --- */
 #terminalContent {
   background: black;
-  color: #00FF00; /* Classic green text */
+  color: #00FF00;
   font-family: 'Courier New', Courier, monospace;
-  padding: 0; /* Let children handle padding */
-  /* Remove flex properties to allow natural block flow */
+  padding: 0;
 }
 
 #terminalOutput {
   padding: 5px;
   overflow-y: auto;
-  white-space: pre-wrap; /* Preserve whitespace and wrap lines */
+  white-space: pre-wrap;
   word-break: break-all;
 }
 
-/* Style for preformatted text in terminal for consistent spacing */
 #terminalOutput pre {
-  margin: 0; /* Remove default margins */
-  font-family: inherit; /* Use terminal's font */
-  color: inherit; /* Use terminal's text color */
+  margin: 0;
+  font-family: inherit;
+  color: inherit;
 }
 
 .welcome-message {
@@ -550,7 +618,7 @@ select.win-button {
 .terminal-input-line {
   display: flex;
   align-items: center;
-  padding: 0 5px 5px 5px; /* Add padding around input line */
+  padding: 0 5px 5px 5px;
 }
 
 .prompt {
