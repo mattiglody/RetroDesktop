@@ -289,13 +289,13 @@ function onWindowResize(e) {
 }
 
 
-// --- Media Player Logic with fixed playlist ---
+// --- Media Player Logic ---
 let audioCtx, analyser, sourceNode, bufferLength, dataArray, animationId;
+let currentSongIndex = -1;
 
 const fileInput = document.getElementById('audioFile');
 const playlistDropdown = document.getElementById('playlistDropdown');
 const browseAudioBtn = document.getElementById('browseAudioBtn');
-
 const audioElement = document.getElementById('media-player-audio');
 const canvas = document.getElementById('visualizer');
 const ctx = canvas.getContext('2d');
@@ -303,52 +303,189 @@ const ctx = canvas.getContext('2d');
 const playBtn = document.getElementById('playBtn');
 const pauseBtn = document.getElementById('pauseBtn');
 const stopBtn = document.getElementById('stopBtn');
+const prevBtn = document.getElementById('prevBtn');
+const nextBtn = document.getElementById('nextBtn');
 const seekBar = document.getElementById('seekBar');
 const volumeControl = document.getElementById('volumeControl');
 const visualizerSelect = document.getElementById('visualizerSelect');
 const nowPlaying = document.getElementById('nowPlaying');
 
 const playlist = [
-  { name: "baby_youre_a_haunted_house_mels_version.m4a", path: "media/baby_youre_a_haunted_house_mels_version.m4a" },
-  { name: "djali_zwan_love_to_love.mp3", path: "media/djali_zwan_love_to_love.mp3" },
-  { name: "jethro_tull_teacher.mp3", path: "media/jethro_tull_teacher.mp3" },
-  { name: "praise_you_fatboy_slim.mp3", path: "media/praise_you_fatboy_slim.mp3" },
-  { name: "the_four_tops_are_you_man_enough.mp3", path: "media/the_four_tops_are_you_man_enough.mp3" },
-  { name: "zwan_love_lies_in_ruin_acoustic.mp3", path: "media/zwan_love_lies_in_ruin_acoustic.mp3" },
-  { name: "zwan_wasting_time.mp3", path: "media/zwan_wasting_time.mp3" }
+    { name: "Baby You're a Haunted House - Mel's Version", path: "media/baby_youre_a_haunted_house_mels_version.m4a" },
+    { name: "Love to Love - Djali Zwan", path: "media/djali_zwan_love_to_love.mp3" },
+    { name: "Teacher - Jethro Tull", path: "media/jethro_tull_teacher.mp3" },
+    { name: "Praise You - Fatboy Slim", path: "media/praise_you_fatboy_slim.mp3" },
+    { name: "Are You Man Enough - The Four Tops", path: "media/the_four_tops_are_you_man_enough.mp3" },
+    { name: "Love Lies in Ruin (Acoustic) - Zwan", path: "media/zwan_love_lies_in_ruin_acoustic.mp3" },
+    { name: "Wasting Time - Zwan", path: "media/zwan_wasting_time.mp3" }
 ];
 
-function populatePlaylist() {
-  playlist.forEach((song, index) => {
-    playlistDropdown.innerHTML += `<option value="${index}">${song.name}</option>`;
-  });
+function setupAudioContext() {
+    if (audioCtx) return;
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    analyser = audioCtx.createAnalyser();
+    analyser.fftSize = 256;
+    sourceNode = audioCtx.createMediaElementSource(audioElement);
+    sourceNode.connect(analyser);
+    analyser.connect(audioCtx.destination);
+    bufferLength = analyser.frequencyBinCount;
+    dataArray = new Uint8Array(bufferLength);
 }
 
-function loadSong(song) {
-  audioElement.pause();
-  audioElement.currentTime = 0;
-  if (animationId) {
-    cancelAnimationFrame(animationId);
-    animationId = null;
-  }
-  if (song && song.path) {
+function drawVisualizer() {
+    if (!analyser) {
+        animationId = requestAnimationFrame(drawVisualizer);
+        return;
+    }
+
+    analyser.getByteFrequencyData(dataArray);
+    ctx.fillStyle = '#008080'; // Teal background
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    const barWidth = (canvas.width / bufferLength) * 2.5;
+    let barHeight;
+    let x = 0;
+
+    for (let i = 0; i < bufferLength; i++) {
+        barHeight = dataArray[i];
+        ctx.fillStyle = `rgb(0, ${barHeight + 100}, ${barHeight + 100})`;
+        ctx.fillRect(x, canvas.height - barHeight / 2, barWidth, barHeight / 2);
+        x += barWidth + 1;
+    }
+    animationId = requestAnimationFrame(drawVisualizer);
+}
+
+function populatePlaylist() {
+    playlist.forEach((song, index) => {
+        playlistDropdown.innerHTML += `<option value="${index}">${song.name}</option>`;
+    });
+}
+
+function loadSong(index) {
+    if (index < 0 || index >= playlist.length) return;
+    currentSongIndex = index;
+    const song = playlist[index];
     audioElement.src = song.path;
     nowPlaying.textContent = song.name;
     nowPlaying.style.display = 'block';
-  } else {
-    audioElement.src = '';
-    nowPlaying.style.display = 'none';
-    seekBar.value = 0;
-  }
-  if (audioCtx && sourceNode) {
-    sourceNode.disconnect();
-    sourceNode = audioCtx.createMediaElementSource(audioElement);
-    sourceNode.connect(analyser);
-  }
-  if (song && song.url) {
-    playlistDropdown.value = "";
-  }
+    playlistDropdown.value = index;
+    updateControls();
 }
+
+function playAudio() {
+    if (!audioCtx) {
+        setupAudioContext();
+    }
+    audioElement.play();
+    playBtn.disabled = true;
+    pauseBtn.disabled = false;
+    if (!animationId) {
+        drawVisualizer();
+    }
+}
+
+function pauseAudio() {
+    audioElement.pause();
+    playBtn.disabled = false;
+    pauseBtn.disabled = true;
+    if (animationId) {
+        cancelAnimationFrame(animationId);
+        animationId = null;
+    }
+}
+
+function stopAudio() {
+    audioElement.pause();
+    audioElement.currentTime = 0;
+    playBtn.disabled = false;
+    pauseBtn.disabled = true;
+    if (animationId) {
+        cancelAnimationFrame(animationId);
+        animationId = null;
+        ctx.fillStyle = '#008080';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
+}
+
+function updateControls() {
+    const hasSong = !!audioElement.src;
+    playBtn.disabled = !hasSong || audioElement.paused ? !hasSong : true;
+    pauseBtn.disabled = !hasSong || !audioElement.paused;
+    stopBtn.disabled = !hasSong;
+    seekBar.disabled = !hasSong;
+    prevBtn.disabled = currentSongIndex <= 0;
+    nextBtn.disabled = currentSongIndex >= playlist.length - 1;
+}
+
+// Event Listeners
+browseAudioBtn.addEventListener('click', () => fileInput.click());
+
+fileInput.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (file) {
+        const url = URL.createObjectURL(file);
+        audioElement.src = url;
+        nowPlaying.textContent = file.name;
+        nowPlaying.style.display = 'block';
+        playlistDropdown.value = "";
+        currentSongIndex = -1; // Indicate it's not a playlist song
+        updateControls();
+        playAudio();
+    }
+});
+
+playlistDropdown.addEventListener('change', () => {
+    const selectedIndex = playlistDropdown.value;
+    if (selectedIndex !== "") {
+        loadSong(parseInt(selectedIndex));
+        playAudio();
+    }
+});
+
+playBtn.addEventListener('click', playAudio);
+pauseBtn.addEventListener('click', pauseAudio);
+stopBtn.addEventListener('click', stopAudio);
+
+prevBtn.addEventListener('click', () => {
+    if (currentSongIndex > 0) {
+        loadSong(currentSongIndex - 1);
+        playAudio();
+    }
+});
+
+nextBtn.addEventListener('click', () => {
+    if (currentSongIndex < playlist.length - 1) {
+        loadSong(currentSongIndex + 1);
+        playAudio();
+    }
+});
+
+volumeControl.addEventListener('input', (e) => {
+    audioElement.volume = e.target.value;
+});
+
+seekBar.addEventListener('input', (e) => {
+    audioElement.currentTime = (audioElement.duration / 100) * e.target.value;
+});
+
+audioElement.addEventListener('timeupdate', () => {
+    if (audioElement.duration) {
+        seekBar.value = (audioElement.currentTime / audioElement.duration) * 100;
+    }
+});
+
+audioElement.addEventListener('ended', () => {
+    // Play next song in playlist if one was playing
+    if (currentSongIndex !== -1 && currentSongIndex < playlist.length - 1) {
+        loadSong(currentSongIndex + 1);
+        playAudio();
+    } else {
+        stopAudio();
+        updateControls();
+    }
+});
+
+audioElement.addEventListener('canplay', updateControls);
 
 
 // --- Image Viewer Logic ---
@@ -436,6 +573,17 @@ startMenu.addEventListener('click', (event) => {
   event.stopPropagation();
 });
 
+document.querySelectorAll('#startMenu [data-window-id]').forEach(item => {
+    item.addEventListener('click', () => {
+        const windowId = item.dataset.windowId;
+        if (windowId) {
+            openWindow(windowId);
+            startMenu.style.display = 'none';
+            startButton.classList.remove('active');
+        }
+    });
+});
+
 function updateClock() {
   const clockElement = document.getElementById('clock');
   if (clockElement) {
@@ -487,7 +635,7 @@ document.querySelectorAll('.minimize-btn').forEach(btn => {
 });
 
 document.querySelectorAll('.maximize-btn').forEach(btn => {
-    const windowElement = btn.closest('.window');
+    const windowElement = btn.closest('window');
     btn.addEventListener('click', () => {
         maximizeWindow(windowElement.id);
     });
