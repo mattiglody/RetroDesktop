@@ -666,3 +666,25 @@ select.win-button {
   width: 75px;
   margin-left: 5px;
 }
+
+#shutdownScreen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: black;
+  color: #c0c0c0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  text-align: center;
+}
+
+#shutdownScreen img {
+  width: 128px;
+  height: 128px;
+  margin-bottom: 20px;
+}

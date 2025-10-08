@@ -672,3 +672,29 @@ document.addEventListener('keydown', (e) => {
         }
     }
 });
+
+const shutdownBtn = document.getElementById('shutdownBtn');
+
+shutdownBtn.addEventListener('click', () => {
+    // Close all windows
+    document.querySelectorAll('.window').forEach(win => {
+        win.style.display = 'none';
+    });
+
+    // Hide the taskbar
+    document.getElementById('taskbar').style.display = 'none';
+
+    // Show the shutdown screen
+    const shutdownScreen = document.getElementById('shutdownScreen');
+    shutdownScreen.style.display = 'flex';
+
+    // Fade out the desktop
+    const desktop = document.getElementById('main-desktop');
+    desktop.style.transition = 'opacity 0.5s ease-out';
+    desktop.style.opacity = '0';
+
+    // Close the browser window after a delay
+    setTimeout(() => {
+        window.close();
+    }, 3000);
+});
