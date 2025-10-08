@@ -72,7 +72,7 @@ function onIconDragStart(e, item) {
  * Handles the movement of a dragged icon.
  */
 function onIconDragMove(e) {
-  if (dragItem === null) return;
+  if (dragItem === null || !dragItem.classList.contains('desktop-icon')) return;
   e.preventDefault();
   const pointer = getPointerCoords(e);
   if (!isDragging) {
@@ -101,7 +101,7 @@ function onIconDragMove(e) {
  * Ends the icon drag operation.
  */
 function onIconDragEnd() {
-  if (dragItem) {
+  if (dragItem && dragItem.classList.contains('desktop-icon')) {
     if (isDragging) {
       dragItem.classList.remove('dragging');
       const iconToSnap = dragItem;
@@ -204,6 +204,7 @@ function bringToFront(windowId) {
 
 function createTaskbarTab(windowId) {
     if (document.querySelector(`.taskbar-tab[data-window-id="${windowId}"]`)) {
+        bringToFront(windowId);
         return; // Tab already exists
     }
     const windowElement = document.getElementById(windowId);
@@ -232,23 +233,31 @@ function createTaskbarTab(windowId) {
 
 function updateTaskbarTab(windowId, isActive) {
     document.querySelectorAll('.taskbar-tab').forEach(t => {
-        if (t.dataset.windowId !== windowId) {
-            t.classList.remove('active');
-        }
+        t.classList.remove('active');
     });
     const tab = document.querySelector(`.taskbar-tab[data-window-id="${windowId}"]`);
-    if (tab) {
-        if (isActive) {
-            tab.classList.add('active');
-        } else {
-            tab.classList.remove('active');
-        }
+    if (tab && isActive) {
+        tab.classList.add('active');
     }
 }
 
 // --- Window Dragging Logic ---
+function onWindowDragStart(e, item) {
+  e.preventDefault();
+  dragItem = item;
+  bringToFront(dragItem.id);
+  const pointer = getPointerCoords(e);
+  const rect = dragItem.getBoundingClientRect();
+  offsetX = pointer.x - rect.left;
+  offsetY = pointer.y - rect.top;
+  document.addEventListener('mousemove', onWindowDragMove);
+  document.addEventListener('mouseup', onWindowDragEnd);
+  document.addEventListener('touchmove', onWindowDragMove, { passive: false });
+  document.addEventListener('touchend', onWindowDragEnd);
+}
+
 function onWindowDragMove(e) {
-  if (!dragItem || dragItem.classList.contains('maximized')) return;
+  if (!dragItem || dragItem.classList.contains('maximized') || !dragItem.classList.contains('window')) return;
   if (e.type === 'touchmove') e.preventDefault();
   isDragging = true;
   const coords = getPointerCoords(e);
@@ -259,6 +268,14 @@ function onWindowDragMove(e) {
   newY = Math.max(0, Math.min(newY, window.innerHeight - dragItem.offsetHeight - taskbarHeight));
   dragItem.style.left = newX + 'px';
   dragItem.style.top = newY + 'px';
+}
+
+function onWindowDragEnd() {
+  dragItem = null;
+  document.removeEventListener('mousemove', onWindowDragMove);
+  document.removeEventListener('mouseup', onWindowDragEnd);
+  document.removeEventListener('touchmove', onWindowDragMove);
+  document.removeEventListener('touchend', onWindowDragEnd);
 }
 
 function onWindowResize(e) {
@@ -435,6 +452,17 @@ setInterval(updateClock, 1000);
 document.querySelectorAll('.desktop-icon').forEach(icon => {
   icon.addEventListener('mousedown', (e) => onIconDragStart(e, icon));
   icon.addEventListener('touchstart', (e) => onIconDragStart(e, icon), { passive: false });
+});
+
+document.querySelectorAll('.title-bar').forEach(titleBar => {
+  titleBar.addEventListener('mousedown', (e) => {
+    if (e.target.classList.contains('win-btn')) return;
+    onWindowDragStart(e, titleBar.closest('.window'));
+  });
+  titleBar.addEventListener('touchstart', (e) => {
+    if (e.target.classList.contains('win-btn')) return;
+    onWindowDragStart(e, titleBar.closest('.window'));
+  }, { passive: false });
 });
 
 document.querySelectorAll('.close-btn').forEach(btn => {
