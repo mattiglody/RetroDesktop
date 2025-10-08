@@ -511,9 +511,16 @@ document.querySelectorAll('.resize-handle').forEach(handle => {
 
 document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
-        const activeWindow = document.querySelector('.window.active');
-        if (activeWindow) {
-            closeWindow(activeWindow.id);
+        const openWindows = Array.from(document.querySelectorAll('.window')).filter(win => win.style.display === 'flex');
+        if (openWindows.length > 0) {
+            const topWindow = openWindows.sort((a, b) => b.style.zIndex - a.style.zIndex)[0];
+            closeWindow(topWindow.id);
+
+            const remainingWindows = Array.from(document.querySelectorAll('.window')).filter(win => win.style.display === 'flex');
+            if (remainingWindows.length > 0) {
+                const nextTopWindow = remainingWindows.sort((a, b) => b.style.zIndex - a.style.zIndex)[0];
+                bringToFront(nextTopWindow.id);
+            }
         }
     }
 });
