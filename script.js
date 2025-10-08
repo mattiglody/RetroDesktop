@@ -338,21 +338,98 @@ function drawVisualizer() {
         return;
     }
 
-    analyser.getByteFrequencyData(dataArray);
-    ctx.fillStyle = '#008080'; // Teal background
+    const visualizerType = visualizerSelect.value;
+
+    ctx.fillStyle = 'black';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
+    switch (visualizerType) {
+        case 'bars':
+            analyser.fftSize = 256;
+            bufferLength = analyser.frequencyBinCount;
+            dataArray = new Uint8Array(bufferLength);
+            analyser.getByteFrequencyData(dataArray);
+            drawBars(dataArray, bufferLength);
+            break;
+        case 'waveform':
+            analyser.fftSize = 2048;
+            bufferLength = analyser.frequencyBinCount;
+            dataArray = new Uint8Array(bufferLength);
+            analyser.getByteTimeDomainData(dataArray);
+            drawWaveform(dataArray, bufferLength);
+            break;
+        case 'circle':
+            analyser.fftSize = 256;
+            bufferLength = analyser.frequencyBinCount;
+            dataArray = new Uint8Array(bufferLength);
+            analyser.getByteFrequencyData(dataArray);
+            drawCircle(dataArray, bufferLength);
+            break;
+    }
+
+    animationId = requestAnimationFrame(drawVisualizer);
+}
+
+function drawBars(dataArray, bufferLength) {
     const barWidth = (canvas.width / bufferLength) * 2.5;
     let barHeight;
     let x = 0;
 
     for (let i = 0; i < bufferLength; i++) {
         barHeight = dataArray[i];
-        ctx.fillStyle = `rgb(0, ${barHeight + 100}, ${barHeight + 100})`;
+        ctx.fillStyle = `rgb(0, ${barHeight + 100}, 0)`;
         ctx.fillRect(x, canvas.height - barHeight / 2, barWidth, barHeight / 2);
         x += barWidth + 1;
     }
-    animationId = requestAnimationFrame(drawVisualizer);
+}
+
+function drawWaveform(dataArray, bufferLength) {
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = 'lime';
+    ctx.beginPath();
+
+    const sliceWidth = canvas.width * 1.0 / bufferLength;
+    let x = 0;
+
+    for (let i = 0; i < bufferLength; i++) {
+        const v = dataArray[i] / 128.0;
+        const y = v * canvas.height / 2;
+
+        if (i === 0) {
+            ctx.moveTo(x, y);
+        } else {
+            ctx.lineTo(x, y);
+        }
+
+        x += sliceWidth;
+    }
+
+    ctx.lineTo(canvas.width, canvas.height / 2);
+    ctx.stroke();
+}
+
+function drawCircle(dataArray, bufferLength) {
+    const centerX = canvas.width / 2;
+    const centerY = canvas.height / 2;
+    const radius = 50;
+    const barWidth = 2;
+
+    for (let i = 0; i < bufferLength; i++) {
+        const barHeight = dataArray[i] / 2;
+        const angle = (i / bufferLength) * 2 * Math.PI;
+
+        const x1 = centerX + radius * Math.cos(angle);
+        const y1 = centerY + radius * Math.sin(angle);
+        const x2 = centerX + (radius + barHeight) * Math.cos(angle);
+        const y2 = centerY + (radius + barHeight) * Math.sin(angle);
+
+        ctx.strokeStyle = `rgb(0, ${barHeight + 100}, 0)`;
+        ctx.lineWidth = barWidth;
+        ctx.beginPath();
+        ctx.moveTo(x1, y1);
+        ctx.lineTo(x2, y2);
+        ctx.stroke();
+    }
 }
 
 function populatePlaylist() {
@@ -365,7 +442,7 @@ function loadSong(index) {
     if (index < 0 || index >= playlist.length) return;
     currentSongIndex = index;
     const song = playlist[index];
-    audioElement.src = song.path;
+    audioElement.src = basePath + song.path;
     nowPlaying.textContent = song.name;
     nowPlaying.style.display = 'block';
     playlistDropdown.value = index;
@@ -402,7 +479,7 @@ function stopAudio() {
     if (animationId) {
         cancelAnimationFrame(animationId);
         animationId = null;
-        ctx.fillStyle = '#008080';
+        ctx.fillStyle = 'black';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
     }
 }
