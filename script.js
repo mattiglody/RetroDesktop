@@ -393,6 +393,13 @@ function displayPhoto(index) {
   });
 }
 
+nextImageBtn.addEventListener('click', () => {
+  displayPhoto((currentPhotoIndex + 1) % photoAlbum.length);
+});
+
+prevImageBtn.addEventListener('click', () => {
+  displayPhoto((currentPhotoIndex - 1 + photoAlbum.length) % photoAlbum.length);
+});
 
 // --- Explorer Logic and Init ---
 function populateExplorer() {
