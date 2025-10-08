@@ -671,6 +671,15 @@ document.addEventListener('keydown', (e) => {
             }
         }
     }
+
+    const imageViewer = document.getElementById('imageViewerWindow');
+    if (imageViewer.classList.contains('active')) {
+        if (e.key === 'ArrowRight') {
+            displayPhoto((currentPhotoIndex + 1) % photoAlbum.length);
+        } else if (e.key === 'ArrowLeft') {
+            displayPhoto((currentPhotoIndex - 1 + photoAlbum.length) % photoAlbum.length);
+        }
+    }
 });
 
 const shutdownBtn = document.getElementById('shutdownBtn');
