@@ -34,6 +34,10 @@ body {
   overflow: hidden;
 }
 
+.window.active {
+  z-index: 100;
+}
+
 .title-bar {
   background: #000080;
   color: white;
@@ -489,6 +493,7 @@ select.win-button {
   width: 100vw !important;
   height: calc(100vh - 30px) !important;
   border: none;
+  z-index: 999;
 }
 
 .window.maximized .resize-handle {

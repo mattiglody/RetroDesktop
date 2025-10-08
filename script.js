@@ -39,7 +39,8 @@ let zIndexCounter = 10;
 let resizeItem = null;
 let initialWidth, initialHeight;
 let initialMouseX, initialMouseY;
-let minWidth, minHeight;
+let minWidth = 200;
+let minHeight = 150;
 const taskbarTabsContainer = document.getElementById('taskbar-tabs');
 const desktopContainer = document.getElementById('main-desktop');
 let activeWindowId = null;
@@ -147,8 +148,19 @@ function handleIconClick(icon) {
 function openWindow(windowId) {
   const windowElement = document.getElementById(windowId);
   if (windowElement) {
-    windowElement.style.display = 'flex';
+    if (windowElement.style.display !== 'flex') {
+        windowElement.style.display = 'flex';
+        // Random position only if it's the first time opening
+        if (!windowElement.style.left) {
+            const taskbarHeight = document.getElementById('taskbar').offsetHeight;
+            const x = Math.random() * (window.innerWidth - windowElement.offsetWidth - 200) + 100;
+            const y = Math.random() * (window.innerHeight - windowElement.offsetHeight - taskbarHeight - 100) + 50;
+            windowElement.style.left = `${x}px`;
+            windowElement.style.top = `${y}px`;
+        }
+    }
     bringToFront(windowId);
+    createTaskbarTab(windowId);
   }
 }
 
@@ -156,7 +168,26 @@ function closeWindow(windowId) {
   const windowElement = document.getElementById(windowId);
   if (windowElement) {
     windowElement.style.display = 'none';
+    const tab = document.querySelector(`.taskbar-tab[data-window-id="${windowId}"]`);
+    if (tab) {
+        tab.remove();
+    }
   }
+}
+
+function minimizeWindow(windowId) {
+    const windowElement = document.getElementById(windowId);
+    if (windowElement) {
+        windowElement.style.display = 'none';
+        updateTaskbarTab(windowId, false);
+    }
+}
+
+function maximizeWindow(windowId) {
+    const windowElement = document.getElementById(windowId);
+    if (windowElement) {
+        windowElement.classList.toggle('maximized');
+    }
 }
 
 function bringToFront(windowId) {
@@ -167,7 +198,52 @@ function bringToFront(windowId) {
       win.classList.remove('active');
     });
     windowElement.classList.add('active');
+    updateTaskbarTab(windowId, true);
   }
+}
+
+function createTaskbarTab(windowId) {
+    if (document.querySelector(`.taskbar-tab[data-window-id="${windowId}"]`)) {
+        return; // Tab already exists
+    }
+    const windowElement = document.getElementById(windowId);
+    const title = windowElement.querySelector('.title-bar span').textContent;
+    const desktopIcon = document.querySelector(`.desktop-icon[data-window-id="${windowId}"]`);
+    const iconSrc = desktopIcon.querySelector('img').src;
+
+    const tab = document.createElement('div');
+    tab.className = 'taskbar-tab';
+    tab.dataset.windowId = windowId;
+    tab.innerHTML = `<img src="${iconSrc}" alt="${title}"> <span>${title}</span>`;
+    tab.onclick = () => {
+        const win = document.getElementById(windowId);
+        if (win.style.display === 'none') {
+            win.style.display = 'flex';
+            bringToFront(windowId);
+        } else if (win.classList.contains('active')) {
+            minimizeWindow(windowId);
+        } else {
+            bringToFront(windowId);
+        }
+    };
+    taskbarTabsContainer.appendChild(tab);
+    updateTaskbarTab(windowId, true);
+}
+
+function updateTaskbarTab(windowId, isActive) {
+    document.querySelectorAll('.taskbar-tab').forEach(t => {
+        if (t.dataset.windowId !== windowId) {
+            t.classList.remove('active');
+        }
+    });
+    const tab = document.querySelector(`.taskbar-tab[data-window-id="${windowId}"]`);
+    if (tab) {
+        if (isActive) {
+            tab.classList.add('active');
+        } else {
+            tab.classList.remove('active');
+        }
+    }
 }
 
 // --- Window Dragging Logic ---
@@ -185,6 +261,15 @@ function onWindowDragMove(e) {
   dragItem.style.top = newY + 'px';
 }
 
+function onWindowResize(e) {
+    if (!resizeItem) return;
+    const dx = e.clientX - initialMouseX;
+    const dy = e.clientY - initialMouseY;
+    const newWidth = Math.max(minWidth, initialWidth + dx);
+    const newHeight = Math.max(minHeight, initialHeight + dy);
+    resizeItem.style.width = newWidth + 'px';
+    resizeItem.style.height = newHeight + 'px';
+}
 
 
 // --- Media Player Logic with fixed playlist ---
@@ -356,5 +441,35 @@ document.querySelectorAll('.close-btn').forEach(btn => {
     const windowElement = btn.closest('.window');
     btn.addEventListener('click', () => {
         closeWindow(windowElement.id);
+    });
+});
+
+document.querySelectorAll('.minimize-btn').forEach(btn => {
+    const windowElement = btn.closest('.window');
+    btn.addEventListener('click', () => {
+        minimizeWindow(windowElement.id);
+    });
+});
+
+document.querySelectorAll('.maximize-btn').forEach(btn => {
+    const windowElement = btn.closest('.window');
+    btn.addEventListener('click', () => {
+        maximizeWindow(windowElement.id);
+    });
+});
+
+document.querySelectorAll('.resize-handle').forEach(handle => {
+    handle.addEventListener('mousedown', (e) => {
+        e.preventDefault();
+        resizeItem = e.target.closest('.window');
+        initialWidth = resizeItem.offsetWidth;
+        initialHeight = resizeItem.offsetHeight;
+        initialMouseX = e.clientX;
+        initialMouseY = e.clientY;
+        document.addEventListener('mousemove', onWindowResize);
+        document.addEventListener('mouseup', () => {
+            resizeItem = null;
+            document.removeEventListener('mousemove', onWindowResize);
+        });
     });
 });
