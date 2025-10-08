@@ -501,3 +501,12 @@ document.querySelectorAll('.resize-handle').forEach(handle => {
         });
     });
 });
+
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+        const activeWindow = document.querySelector('.window.active');
+        if (activeWindow) {
+            closeWindow(activeWindow.id);
+        }
+    }
+});
